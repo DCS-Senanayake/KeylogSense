@@ -1,0 +1,11 @@
+{
+  "samples": [
+    {
+      "label": "ExampleApprovedSample",
+      "path": "C:\\IsolatedVM\\Samples\\example-approved-sample.exe",
+      "arguments": "",
+      "academicApprovalReference": "Supervisor approval reference or course approval record",
+      "notes": "Run only inside an isolated Windows VM with the Phase 2.5 safety checklist enforced."
+    }
+  ]
+}

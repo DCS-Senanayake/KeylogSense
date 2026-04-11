@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>KeyloggerDetection.Evaluation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KeyloggerDetection.App\KeyloggerDetection.App.csproj" />
+    <ProjectReference Include="..\..\src\KeyloggerDetection.Core\KeyloggerDetection.Core.csproj" />
+    <ProjectReference Include="..\..\src\KeyloggerDetection.Infrastructure\KeyloggerDetection.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\KeyloggerDetection.Monitoring\KeyloggerDetection.Monitoring.csproj" />
+    <ProjectReference Include="..\..\src\KeyloggerDetection.Scoring\KeyloggerDetection.Scoring.csproj" />
+    <ProjectReference Include="..\KeyloggerDetection.Simulator\KeyloggerDetection.Simulator.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

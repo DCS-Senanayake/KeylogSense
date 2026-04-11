@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KeyloggerDetection.App/KeyloggerDetection.App.csproj" />
+    <Project Path="src/KeyloggerDetection.Core/KeyloggerDetection.Core.csproj" />
+    <Project Path="src/KeyloggerDetection.Infrastructure/KeyloggerDetection.Infrastructure.csproj" />
+    <Project Path="src/KeyloggerDetection.Monitoring/KeyloggerDetection.Monitoring.csproj" />
+    <Project Path="src/KeyloggerDetection.Scoring/KeyloggerDetection.Scoring.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KeyloggerDetection.Tests/KeyloggerDetection.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/KeyloggerDetection.Evaluation/KeyloggerDetection.Evaluation.csproj" />
+    <Project Path="tools/KeyloggerDetection.Simulator/KeyloggerDetection.Simulator.csproj" />
+  </Folder>
+</Solution>
