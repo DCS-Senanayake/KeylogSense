@@ -31,20 +31,28 @@ public sealed class AllowlistManager
         // 2. Exact Path Validation
         if (!string.IsNullOrWhiteSpace(executablePath))
         {
-            var normalizedPath = Path.GetFullPath(executablePath); // resolve ../ etc
-            if (_whitelist.TrustedExecutablePaths.Any(p => string.Equals(Path.GetFullPath(p), normalizedPath, StringComparison.OrdinalIgnoreCase)))
+            var normalizedPath = TryNormalizePath(executablePath);
+            if (normalizedPath != null &&
+                _whitelist.TrustedExecutablePaths
+                    .Select(TryNormalizePath)
+                    .Where(p => p != null)
+                    .Any(p => string.Equals(p, normalizedPath, StringComparison.OrdinalIgnoreCase)))
+            {
                 return true;
+            }
         }
 
         // 3. Name Validation (e.g. 'chrome.exe')
         if (!string.IsNullOrWhiteSpace(processName))
         {
             var rawName = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? processName : processName + ".exe";
+            var executableName = !string.IsNullOrWhiteSpace(executablePath) ? Path.GetFileName(executablePath) : null;
             
             if (_whitelist.TrustedProcessNames.Any(n => 
             {
                 var nExe = n.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? n : n + ".exe";
-                return string.Equals(nExe, rawName, StringComparison.OrdinalIgnoreCase);
+                return string.Equals(nExe, rawName, StringComparison.OrdinalIgnoreCase) &&
+                    (string.IsNullOrWhiteSpace(executableName) || string.Equals(nExe, executableName, StringComparison.OrdinalIgnoreCase));
             })) return true;
         }
 
@@ -59,5 +67,22 @@ public sealed class AllowlistManager
         if (string.IsNullOrWhiteSpace(sha256Hex)) return false;
         
         return _whitelist.TrustedHashes.Contains(sha256Hex, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string? TryNormalizePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Path.GetFullPath(path);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

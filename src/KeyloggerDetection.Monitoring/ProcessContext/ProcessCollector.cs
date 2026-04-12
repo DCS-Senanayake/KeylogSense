@@ -120,7 +120,7 @@ public sealed class ProcessCollector : ICollector
         }
 
         var locationClass = _locationClassifier.Classify(executablePath);
-        var trustState = _signatureVerifier.CheckTrust(executablePath);
+        var signatureResult = _signatureVerifier.Inspect(executablePath);
 
         var telemetryEvent = new ProcessContextEvent(
             pid,
@@ -129,8 +129,8 @@ public sealed class ProcessCollector : ICollector
             executablePath,
             startTime,
             locationClass,
-            trustState,
-            null // Publisher extraction optionally added if Authenticode API used
+            signatureResult.TrustState,
+            signatureResult.PublisherName
         );
 
         pipeline.Publish(telemetryEvent);

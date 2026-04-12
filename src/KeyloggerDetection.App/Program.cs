@@ -57,7 +57,7 @@ internal static class Program
             persistenceCollector 
         };
 
-        var aggregator = new FeatureAggregator(_logger, pipeline, scoringEngine, detectionLogger, fileWriteAnalyzer);
+        var aggregator = new FeatureAggregator(config, _logger, pipeline, scoringEngine, detectionLogger, fileWriteAnalyzer);
 
         // 5. Monitoring Coordinator
         var coordinator = new MonitoringCoordinator(_logger, collectors, aggregator, pipeline);

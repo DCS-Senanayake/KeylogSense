@@ -1,49 +1,84 @@
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using KeyloggerDetection.Core.Models;
 
 namespace KeyloggerDetection.Monitoring.ProcessContext;
 
 /// <summary>
-/// Basic Authenticode / Signature verifier.
-/// Proposal reference: "trusted or signed publisher metadata where feasible."
+/// Best-effort Authenticode inspection.
+/// Signed files are treated as trusted unless Windows exposes an explicit
+/// signature distrust condition. Inspection failures remain Unknown.
 /// </summary>
 public sealed class SignatureVerifier
 {
-    /// <summary>
-    /// Attempts to read the digital signature of the file.
-    /// Note: Full verification of the chain requires WinVerifyTrust via P/Invoke. 
-    /// For this version, checking if a valid cert exists is a best-effort "feasible" check.
-    /// </summary>
-    public TrustState CheckTrust(string? executablePath)
+    public SignatureInspectionResult Inspect(string? executablePath)
     {
         if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
         {
-            return TrustState.Unknown;
+            return new SignatureInspectionResult(TrustState.Unknown, null);
         }
 
         try
         {
-            // .NET provides a basic way to read embedded Authenticode signatures.
-            // .NET 10 explicitly prefers X509CertificateLoader over the obsolete CreateFromSignedFile
-            using var cert = X509CertificateLoader.LoadCertificateFromFile(executablePath);
-            
-            // We can elevate this to X509Certificate2 to check the chain if needed:
-            // using var cert2 = new X509Certificate2(cert);
-            // var chain = new X509Chain();
-            // bool isValid = chain.Build(cert2); // Requires online Revocation check by default
-            
-            // For now, if it creates successfully, the file has a signature.
-            return TrustState.Trusted;
+#pragma warning disable SYSLIB0057
+            var rawCertificate = X509Certificate.CreateFromSignedFile(executablePath);
+#pragma warning restore SYSLIB0057
+            using var certificate = new X509Certificate2(rawCertificate);
+
+            var publisherName = certificate.GetNameInfo(X509NameType.SimpleName, forIssuer: false);
+            var trustState = DetermineTrustState(certificate);
+
+            return new SignatureInspectionResult(trustState, string.IsNullOrWhiteSpace(publisherName) ? null : publisherName);
         }
-        catch (System.Security.Cryptography.CryptographicException)
+        catch (CryptographicException ex) when (LooksLikeMissingSignature(ex))
         {
-            // Thrown when the file has no signature
-            return TrustState.InvalidSignature;
+            return new SignatureInspectionResult(TrustState.InvalidSignature, null);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return new SignatureInspectionResult(TrustState.Unknown, null);
+        }
+        catch (IOException)
+        {
+            return new SignatureInspectionResult(TrustState.Unknown, null);
         }
         catch (Exception)
         {
-            // Access denied or other read error
-            return TrustState.Unknown;
+            return new SignatureInspectionResult(TrustState.Unknown, null);
         }
     }
+
+    private static TrustState DetermineTrustState(X509Certificate2 certificate)
+    {
+        using var chain = new X509Chain();
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+        chain.ChainPolicy.VerificationFlags =
+            X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+            X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+            X509VerificationFlags.IgnoreEndRevocationUnknown |
+            X509VerificationFlags.IgnoreRootRevocationUnknown;
+
+        _ = chain.Build(certificate);
+
+        foreach (var status in chain.ChainStatus)
+        {
+            if (status.Status is X509ChainStatusFlags.ExplicitDistrust
+                or X509ChainStatusFlags.NotSignatureValid)
+            {
+                return TrustState.Untrusted;
+            }
+        }
+
+        return TrustState.Trusted;
+    }
+
+    private static bool LooksLikeMissingSignature(CryptographicException ex)
+    {
+        return ex.HResult == unchecked((int)0x80092009)
+            || ex.HResult == unchecked((int)0x8007000B)
+            || ex.Message.Contains("signed", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("object", StringComparison.OrdinalIgnoreCase);
+    }
 }
+
+public sealed record SignatureInspectionResult(TrustState TrustState, string? PublisherName);

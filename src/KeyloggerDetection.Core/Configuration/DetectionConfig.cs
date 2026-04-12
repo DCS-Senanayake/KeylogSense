@@ -122,7 +122,7 @@ public sealed class DetectionConfig
     /// ENGINEERING ASSUMPTION (A-SMALL-WRITES): Default is 10.
     /// The proposal does not define "frequent." Will be tuned in P9.
     /// </summary>
-    public int SmallWriteCountThreshold { get; set; } = 10;
+    public int SmallWriteCountThreshold { get; set; } = 12;
 
     /// <summary>
     /// Maximum file write size in bytes to be considered a "small write."
@@ -130,7 +130,7 @@ public sealed class DetectionConfig
     /// ENGINEERING ASSUMPTION (A-SMALL-WRITES): Default is 1024 bytes.
     /// The proposal does not define "small." Will be tuned in P9.
     /// </summary>
-    public int SmallWriteMaxBytes { get; set; } = 1024;
+    public int SmallWriteMaxBytes { get; set; } = 512;
 
     /// <summary>
     /// Minimum number of writes to the same file to trigger the
@@ -139,7 +139,7 @@ public sealed class DetectionConfig
     /// ENGINEERING ASSUMPTION (A-REPEATED-WRITES): Default is 5.
     /// The proposal does not define the count. Will be tuned in P9.
     /// </summary>
-    public int RepeatedSameFileWriteThreshold { get; set; } = 5;
+    public int RepeatedSameFileWriteThreshold { get; set; } = 8;
 
     /// <summary>
     /// Time window in seconds for counting "repeated same file writes."
@@ -147,7 +147,7 @@ public sealed class DetectionConfig
     /// ENGINEERING ASSUMPTION (A-REPEATED-WRITES): Default is 60 seconds.
     /// The proposal says "short time window" without specifying a value.
     /// </summary>
-    public int RepeatedWriteWindowSeconds { get; set; } = 60;
+    public int RepeatedWriteWindowSeconds { get; set; } = 30;
 
     // ---------------------------------------------------------------
     //  Network activity configuration (P5)
@@ -170,6 +170,13 @@ public sealed class DetectionConfig
     /// </summary>
     public string[] MonitoredNetworkProtocols { get; set; } = ["TCP"];
 
+    /// <summary>
+    /// Minimum number of distinct outbound connections in the current process window
+    /// before the outbound-network rule contributes score.
+    /// ENGINEERING ASSUMPTION: A single connection is too common in benign apps.
+    /// </summary>
+    public int OutboundConnectionCountThreshold { get; set; } = 2;
+
     // ---------------------------------------------------------------
     //  File-network correlation window (to be tuned in P5/P9)
     // ---------------------------------------------------------------
@@ -181,7 +188,7 @@ public sealed class DetectionConfig
     /// ENGINEERING ASSUMPTION (A-CORRELATION-WINDOW): Default is 30 seconds.
     /// The proposal says "close in time" without specifying a value.
     /// </summary>
-    public int FileNetworkCorrelationWindowSeconds { get; set; } = 30;
+    public int FileNetworkCorrelationWindowSeconds { get; set; } = 10;
 
     // ---------------------------------------------------------------
     //  Persistence and Allowlist (P6)
@@ -193,6 +200,19 @@ public sealed class DetectionConfig
     /// Polling every 15 seconds reduces unnecessary Windows API polling overhead.
     /// </summary>
     public int PersistencePollingIntervalMs { get; set; } = 15000;
+
+    /// <summary>
+    /// Benign cache/state paths to exclude from file-write scoring by default.
+    /// These reduce known browser/editor cache noise without removing the file
+    /// behaviour category from the detector.
+    /// </summary>
+    public string[] BenignFilePathExclusions { get; set; } =
+    [
+        @"\AppData\Local\Google\Chrome\User Data\",
+        @"\AppData\Local\Microsoft\Edge\User Data\",
+        @"\AppData\Local\Mozilla\Firefox\Profiles\",
+        @"\AppData\Local\Packages\"
+    ];
 
     /// <summary>
     /// Configuration for trusted items to bypass scoring.

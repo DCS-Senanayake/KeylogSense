@@ -47,7 +47,7 @@ public class RiskScoringEngineTests
         config.AlertThreshold = 7; // As defined by ENGINEERING ASSUMPTION
         var engine = new RiskScoringEngine(config, GetAllowlist(config), new MockClock());
 
-        // Combination: Suspicious Location(+4) + Persistence(+5) = 9
+        // Combination: AppData suspicious location(+3) + Persistence(+5) = 8
         var vector = new FeatureVector 
         { 
             LocationClassification = SuspiciousLocationClassification.AppData,
@@ -56,8 +56,9 @@ public class RiskScoringEngineTests
         
         var result = engine.Evaluate(vector);
         
-        Assert.Equal(9, result.TotalScore);
+        Assert.Equal(8, result.TotalScore);
         Assert.True(result.IsSuspicious); // 9 > 7
+        Assert.True(result.ShouldRaiseAlert);
         Assert.Equal(2, result.RuleHits.Count);
         
         // Assert human readable explanation populated
@@ -87,25 +88,50 @@ public class RiskScoringEngineTests
     }
 
     [Fact]
-    public void Evaluate_TimingCorrelation_AwardsBonusCorrectly()
+    public void Evaluate_TimingCorrelation_RequiresTightWindowAndStrongFileSignal()
     {
         var config = GetConfig();
         var baseTime = new DateTime(2025, 1, 1, 12, 0, 0);
         
         var engine = new RiskScoringEngine(config, GetAllowlist(config), new MockClock());
 
-        // File and Network within 30s
+        // Strong file signal is present, but the events are outside the tighter 10s burst window.
         var vector = new FeatureVector 
         { 
             HasOutboundConnections = true,
+            OutboundConnectionCount = 2,
+            SmallWriteCount = config.SmallWriteCountThreshold,
             LastFileWriteTime = baseTime,
             LastNetworkActivityTime = baseTime.AddSeconds(15) // +15 sec diff
         };
         
         var result = engine.Evaluate(vector);
         
-        // 2 points for Outbound string + 2 points for correlation = 4
+        // 2 points for outbound burst + 2 points for frequent small writes = 4
         Assert.Equal(4, result.TotalScore);
+        Assert.DoesNotContain(result.RuleHits, r => r.RuleName == "Simultaneous Network and File Activity");
+    }
+
+    [Fact]
+    public void Evaluate_TimingCorrelation_AwardsBonusWithinBurstWindow()
+    {
+        var config = GetConfig();
+        var baseTime = new DateTime(2025, 1, 1, 12, 0, 0);
+
+        var engine = new RiskScoringEngine(config, GetAllowlist(config), new MockClock());
+
+        var vector = new FeatureVector
+        {
+            HasOutboundConnections = true,
+            OutboundConnectionCount = 2,
+            SmallWriteCount = config.SmallWriteCountThreshold,
+            LastFileWriteTime = baseTime,
+            LastNetworkActivityTime = baseTime.AddSeconds(5)
+        };
+
+        var result = engine.Evaluate(vector);
+
+        Assert.Equal(6, result.TotalScore);
         Assert.Contains(result.RuleHits, r => r.RuleName == "Simultaneous Network and File Activity");
     }
 
@@ -132,5 +158,51 @@ public class RiskScoringEngineTests
         // Assert clean bypass
         Assert.Equal(0, result.TotalScore);
         Assert.False(result.IsSuspicious);
+    }
+
+    [Fact]
+    public void Evaluate_WeakSignalsOnly_AreSuppressedByAlertGuardrail()
+    {
+        var config = GetConfig();
+        var engine = new RiskScoringEngine(config, GetAllowlist(config), new MockClock());
+
+        var vector = new FeatureVector
+        {
+            ProcessName = "chrome.exe",
+            ExecutablePath = @"C:\Users\Test\AppData\Local\Google\Chrome\Application\chrome.exe",
+            LocationClassification = SuspiciousLocationClassification.LocalAppData,
+            Trust = TrustState.InvalidSignature,
+            HasOutboundConnections = true,
+            OutboundConnectionCount = config.OutboundConnectionCountThreshold
+        };
+
+        var result = engine.Evaluate(vector);
+
+        Assert.False(result.IsSuspicious);
+        Assert.False(result.ShouldRaiseAlert);
+    }
+
+    [Fact]
+    public void Evaluate_ScoreAboveThresholdWithoutStrongBehaviour_DoesNotRaiseAlert()
+    {
+        var config = GetConfig();
+        var engine = new RiskScoringEngine(config, GetAllowlist(config), new MockClock());
+
+        var vector = new FeatureVector
+        {
+            ProcessName = "downloads-run.exe",
+            ExecutablePath = @"C:\Users\Test\Downloads\downloads-run.exe",
+            LocationClassification = SuspiciousLocationClassification.Downloads,
+            Trust = TrustState.InvalidSignature,
+            HasOutboundConnections = true,
+            OutboundConnectionCount = config.OutboundConnectionCountThreshold
+        };
+
+        var result = engine.Evaluate(vector);
+
+        Assert.True(result.IsSuspicious);
+        Assert.False(result.ShouldRaiseAlert);
+        Assert.False(result.MeetsAlertGuardrail);
+        Assert.NotNull(result.AlertGuardrailReason);
     }
 }

@@ -56,6 +56,28 @@ public class LocationClassifierTests
         
         Assert.Equal(SuspiciousLocationClassification.AppData, result);
     }
+
+    [Fact]
+    public void Classify_LocalAppDataPath_ReturnsLocalAppData()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appPath = Path.Combine(localAppData, "Vendor", "tool.exe");
+
+        var result = _classifier.Classify(appPath);
+
+        Assert.Equal(SuspiciousLocationClassification.LocalAppData, result);
+    }
+
+    [Fact]
+    public void Classify_LocalAppDataProgramsPath_ReturnsSafe()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appPath = Path.Combine(localAppData, "Programs", "Vendor", "tool.exe");
+
+        var result = _classifier.Classify(appPath);
+
+        Assert.Equal(SuspiciousLocationClassification.Safe, result);
+    }
     
     [Fact]
     public void Classify_DownloadsPath_ReturnsDownloads()

@@ -10,6 +10,7 @@ public sealed class LocationClassifier
 {
     private readonly string _appDataPattern;
     private readonly string _localAppDataPattern;
+    private readonly string _localProgramsPattern;
     private readonly string _tempPattern;
     private readonly string _downloadsPattern;
 
@@ -20,6 +21,7 @@ public sealed class LocationClassifier
         // (e.g. C:\Temp vs C:\Templates)
         _appDataPattern = EnsureTrailingSlash(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         _localAppDataPattern = EnsureTrailingSlash(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        _localProgramsPattern = EnsureTrailingSlash(Path.Combine(_localAppDataPattern, "Programs"));
         _tempPattern = EnsureTrailingSlash(Path.GetTempPath());
 
         // Downloads doesn't have a reliable SpecialFolder enum in .NET standard environments,
@@ -52,9 +54,12 @@ public sealed class LocationClassifier
                 
             if (normalized.StartsWith(_appDataPattern, StringComparison.OrdinalIgnoreCase))
                 return SuspiciousLocationClassification.AppData;
-                
+
+            if (normalized.StartsWith(_localProgramsPattern, StringComparison.OrdinalIgnoreCase))
+                return SuspiciousLocationClassification.Safe;
+
             if (normalized.StartsWith(_localAppDataPattern, StringComparison.OrdinalIgnoreCase))
-                return SuspiciousLocationClassification.AppData;
+                return SuspiciousLocationClassification.LocalAppData;
                 
             if (normalized.StartsWith(_downloadsPattern, StringComparison.OrdinalIgnoreCase))
                 return SuspiciousLocationClassification.Downloads;

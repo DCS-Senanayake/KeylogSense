@@ -37,21 +37,23 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
         }
 
         // 2. Assess Suspicious Location (+4)
-        if (vector.LocationClassification != SuspiciousLocationClassification.Safe)
+        var suspiciousLocationScore = GetSuspiciousLocationScore(vector.LocationClassification);
+        if (suspiciousLocationScore > 0)
         {
             rules.Add(new TriggeredRule
             {
                 RuleId = "RL-01",
                 RuleName = "Suspicious Location",
-                Score = _config.SuspiciousLocationScore,
+                Score = suspiciousLocationScore,
                 Reason = $"Process is running from a commonly abused user-writable location: {vector.LocationClassification}"
             });
-            score += _config.SuspiciousLocationScore;
+            score += suspiciousLocationScore;
         }
 
         // 3. Assess Untrusted Publisher (+3)
         // Unknown is implicitly ignored as per requirements (Not malicious just because we couldn't read the cert).
-        if (vector.Trust == TrustState.Untrusted || vector.Trust == TrustState.InvalidSignature)
+        var hasExplicitTrustFailure = vector.Trust == TrustState.Untrusted || vector.Trust == TrustState.InvalidSignature;
+        if (hasExplicitTrustFailure)
         {
             rules.Add(new TriggeredRule
             {
@@ -64,7 +66,8 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
         }
 
         // 4. Repeated Small Writes (+2)
-        if (vector.SmallWriteCount >= _config.SmallWriteCountThreshold)
+        var hasFrequentSmallWrites = vector.SmallWriteCount >= _config.SmallWriteCountThreshold;
+        if (hasFrequentSmallWrites)
         {
             rules.Add(new TriggeredRule
             {
@@ -77,7 +80,8 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
         }
 
         // 5. Repeated Same-File Writes (+2)
-        if (vector.RepeatedSameFileWriteCount >= _config.RepeatedSameFileWriteThreshold)
+        var hasRepeatedSameFileWrites = vector.RepeatedSameFileWriteCount >= _config.RepeatedSameFileWriteThreshold;
+        if (hasRepeatedSameFileWrites)
         {
             rules.Add(new TriggeredRule
             {
@@ -90,24 +94,28 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
         }
 
         // 6. Outbound Connection (+2)
-        if (vector.HasOutboundConnections)
+        var hasOutboundNetworkBurst = vector.OutboundConnectionCount >= _config.OutboundConnectionCountThreshold;
+        if (hasOutboundNetworkBurst)
         {
             rules.Add(new TriggeredRule
             {
                 RuleId = "RL-05",
                 RuleName = "Outbound Network Activity",
                 Score = _config.OutboundNetworkScore,
-                Reason = "Process actively established new outbound network connections to remote targets."
+                Reason = $"Process actively established {vector.OutboundConnectionCount} outbound network connection(s) to remote targets."
             });
             score += _config.OutboundNetworkScore;
         }
 
         // 7. Time Correlation: Network & File Logging proximity (+2)
-        if (vector.HasOutboundConnections && vector.LastFileWriteTime.HasValue && vector.LastNetworkActivityTime.HasValue)
+        var hasStrongFileSignal = hasFrequentSmallWrites || hasRepeatedSameFileWrites;
+        var hasSuspiciousFileNetworkCorrelation = false;
+        if (hasOutboundNetworkBurst && hasStrongFileSignal && vector.LastFileWriteTime.HasValue && vector.LastNetworkActivityTime.HasValue)
         {
             var diff = Math.Abs((vector.LastFileWriteTime.Value - vector.LastNetworkActivityTime.Value).TotalSeconds);
             if (diff <= _config.FileNetworkCorrelationWindowSeconds)
             {
+                hasSuspiciousFileNetworkCorrelation = true;
                 rules.Add(new TriggeredRule
                 {
                     RuleId = "RL-06",
@@ -132,10 +140,20 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
             score += _config.PersistenceDetectedScore;
         }
 
-        return BuildResult(vector, score, rules);
+        var meetsAlertGuardrail = !IsWeakOnlyScoreProfile(score, vector, hasStrongFileSignal, hasSuspiciousFileNetworkCorrelation);
+        var guardrailReason = meetsAlertGuardrail
+            ? null
+            : "Score exceeded the threshold using weak/common signals only; suppressing the user-facing alert until a stronger behavioural signal is also present.";
+
+        return BuildResult(vector, score, rules, meetsAlertGuardrail, guardrailReason);
     }
 
-    private DetectionResult BuildResult(FeatureVector vector, int score, List<TriggeredRule> rules)
+    private DetectionResult BuildResult(
+        FeatureVector vector,
+        int score,
+        List<TriggeredRule> rules,
+        bool meetsAlertGuardrail = true,
+        string? guardrailReason = null)
     {
         return new DetectionResult
         {
@@ -149,7 +167,39 @@ public sealed class RiskScoringEngine : IRiskScoringEngine /* Assuming interface
             TotalScore = score,
             Threshold = _config.AlertThreshold,
             RuleHits = rules,
+            MeetsAlertGuardrail = meetsAlertGuardrail,
+            AlertGuardrailReason = guardrailReason,
             EvaluationTime = _clock.UtcNow
         };
+    }
+
+    private int GetSuspiciousLocationScore(SuspiciousLocationClassification locationClassification)
+    {
+        return locationClassification switch
+        {
+            SuspiciousLocationClassification.Safe => 0,
+            SuspiciousLocationClassification.LocalAppData => 2,
+            SuspiciousLocationClassification.AppData => 3,
+            _ => _config.SuspiciousLocationScore
+        };
+    }
+
+    private bool IsWeakOnlyScoreProfile(
+        int score,
+        FeatureVector vector,
+        bool hasStrongFileSignal,
+        bool hasSuspiciousFileNetworkCorrelation)
+    {
+        if (score <= _config.AlertThreshold)
+        {
+            return false;
+        }
+
+        if (vector.PersistenceDetected || hasStrongFileSignal || hasSuspiciousFileNetworkCorrelation)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

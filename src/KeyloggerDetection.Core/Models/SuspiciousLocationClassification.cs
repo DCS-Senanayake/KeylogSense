@@ -9,8 +9,11 @@ public enum SuspiciousLocationClassification
     /// <summary>Standard, protected system location (e.g., Program Files, Windows).</summary>
     Safe,
 
-    /// <summary>Roaming or Local AppData directories.</summary>
+    /// <summary>Roaming AppData directories.</summary>
     AppData,
+
+    /// <summary>Local AppData directories outside common installed-program roots.</summary>
+    LocalAppData,
 
     /// <summary>User temp directories.</summary>
     Temp,

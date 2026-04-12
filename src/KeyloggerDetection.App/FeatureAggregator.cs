@@ -13,6 +13,7 @@ namespace KeyloggerDetection.App;
 /// </summary>
 public sealed class FeatureAggregator
 {
+    private readonly DetectionConfig _config;
     private readonly IAppLogger _logger;
     private readonly ITelemetryPipeline _pipeline;
     private readonly IRiskScoringEngine _scoringEngine;
@@ -29,12 +30,14 @@ public sealed class FeatureAggregator
     public event Action<DetectionResult, string>? OnSuspiciousAlert;
 
     public FeatureAggregator(
+        DetectionConfig config,
         IAppLogger logger, 
         ITelemetryPipeline pipeline, 
         IRiskScoringEngine scoringEngine,
         IDetectionLogger detectionLogger,
         FileWriteAnalyzer fileWriteAnalyzer)
     {
+        _config = config;
         _logger = logger;
         _pipeline = pipeline;
         _scoringEngine = scoringEngine;
@@ -101,6 +104,7 @@ public sealed class FeatureAggregator
 
             case NetworkConnectionEvent nce:
                 vector.HasOutboundConnections = true;
+                vector.OutboundConnectionCount++;
                 vector.LastNetworkActivityTime = nce.Timestamp;
                 updated = true;
                 break;
@@ -135,7 +139,7 @@ public sealed class FeatureAggregator
 
         var result = _scoringEngine.Evaluate(vector);
 
-        if (result.IsSuspicious)
+        if (result.ShouldRaiseAlert)
         {
             // Debounce check
             var now = DateTime.UtcNow;
@@ -158,9 +162,9 @@ public sealed class FeatureAggregator
                 ExecutablePath = vector.ExecutablePath,
                 SuspiciousLocation = vector.LocationClassification != SuspiciousLocationClassification.Safe,
                 UntrustedPublisher = vector.Trust == TrustState.Untrusted || vector.Trust == TrustState.InvalidSignature,
-                FrequentSmallWrites = vector.SmallWriteCount > 0, // Simplified boolean for log map
-                RepeatedSameFileWrites = vector.RepeatedSameFileWriteCount > 0,
-                OutboundNetwork = vector.HasOutboundConnections,
+                FrequentSmallWrites = vector.SmallWriteCount >= _config.SmallWriteCountThreshold,
+                RepeatedSameFileWrites = vector.RepeatedSameFileWriteCount >= _config.RepeatedSameFileWriteThreshold,
+                OutboundNetwork = vector.OutboundConnectionCount >= _config.OutboundConnectionCountThreshold,
                 FileNetworkCorrelation = result.RuleHits.Any(r => r.RuleName.Contains("Simultaneous Network")),
                 PersistenceDetected = vector.PersistenceDetected,
                 RiskScore = result.TotalScore,

@@ -110,6 +110,11 @@ public sealed class FileWriteAnalyzer
 
     private bool ShouldIgnorePath(string filePath)
     {
+        if (_config.BenignFilePathExclusions.Any(p => filePath.Contains(p, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
         if (_config.MonitoredFileRoots.Length == 0) return false;
 
         foreach (var root in _config.MonitoredFileRoots)

@@ -90,4 +90,28 @@ public class FileWriteAnalyzerTests
         // Only the second event is processed
         Assert.Equal(1, result.SmallWriteCount);
     }
+
+    [Fact]
+    public void ProcessEvent_BenignExcludedPath_IsIgnored()
+    {
+        var config = new DetectionConfig();
+        var clock = new MockClock();
+        var analyzer = new FileWriteAnalyzer(config, clock);
+        var pid = 5005;
+
+        analyzer.ProcessEvent(new FileWriteEvent(
+            pid,
+            clock.UtcNow,
+            @"C:\Users\Test\AppData\Local\Google\Chrome\User Data\Default\Cache\cache.data",
+            32));
+
+        var result = analyzer.ProcessEvent(new FileWriteEvent(
+            pid,
+            clock.UtcNow,
+            @"C:\Users\Test\AppData\Local\Google\Chrome\User Data\Default\Code Cache\js.bin",
+            32));
+
+        Assert.Equal(0, result.SmallWriteCount);
+        Assert.Equal(0, result.RepeatedSameFileWriteCount);
+    }
 }

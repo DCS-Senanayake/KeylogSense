@@ -21,6 +21,18 @@ public sealed class DetectionResult
     /// <summary>Whether the event exceeded the threshold (TotalScore > Threshold).</summary>
     public bool IsSuspicious => TotalScore > Threshold;
 
+    /// <summary>
+    /// Whether the score-above-threshold result also satisfies the user-facing
+    /// alert guardrail requiring a stronger behavioural signal.
+    /// </summary>
+    public bool MeetsAlertGuardrail { get; init; } = true;
+
+    /// <summary>Explains why a score-above-threshold result was suppressed.</summary>
+    public string? AlertGuardrailReason { get; init; }
+
+    /// <summary>True only when the strict score rule and the alert guardrail both pass.</summary>
+    public bool ShouldRaiseAlert => IsSuspicious && MeetsAlertGuardrail;
+
     /// <summary>Clear human-readable reasons bridging indicators to the score.</summary>
     public required IReadOnlyList<TriggeredRule> RuleHits { get; init; }
 
