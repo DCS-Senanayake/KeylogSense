@@ -32,17 +32,10 @@ The runner currently uses the following scenarios.
 
 | Scenario | Why It Exists | Expected Outcome |
 |---|---|---|
-| `network-only-temp` | Stages the safe simulator under `%TEMP%` so the suspicious-location rule can combine with unsigned publisher and outbound network activity | Alert expected |
-| `combined-temp` | Stages the simulator under `%TEMP%` and runs network + file + persistence behaviour together | Alert expected |
+| `simulator-temp` | Stages the safe simulator under `%TEMP%` so suspicious location can combine with repeated file writes and outbound network activity from one realistic flow | Alert expected when full telemetry is available |
+| `simulator-temp-persistence` | Uses the same staged simulator flow with explicitly enabled inert persistence simulation | Alert expected |
 
-### 2.2  Capability / Limitation Probes
-
-| Scenario | Why It Exists | Expected Outcome |
-|---|---|---|
-| `file-only-temp` | Measures whether file-write telemetry is actually available end-to-end | Alert only if file telemetry is available |
-| `persistence-only-temp` | Documents the current safe persistence limitation | No attributed alert currently expected |
-
-### 2.3  Benign Controls
+### 2.2  Benign Controls
 
 | Scenario | Why It Exists | Expected Outcome |
 |---|---|---|
@@ -73,18 +66,14 @@ The current live file-behaviour collector uses ETW kernel file events and
 therefore needs administrator privileges. When the app is not elevated:
 
 - file behaviour monitoring is offline
-- `file-only-temp` becomes a capability-limited observation
+- `simulator-temp` cannot fully exercise file-write rules end-to-end
 - the runner must report this honestly instead of counting it as a failure
 
-### 4.2  Persistence Attribution
+### 4.2  Persistence Safety Model
 
-The current simulator writes an **inert** Run-key value pointing to
-`notepad.exe` for safety. This avoids creating a self-launch loop at logon,
-but it also means the persistence change is not attributed back to the
-simulator PID in the current implementation.
-
-That is why `persistence-only-temp` is kept as a documented limitation probe
-instead of a claimed positive-control alert.
+When persistence is enabled, the simulator writes an **inert** Run-key value
+pointing to `notepad.exe` for safety. This avoids creating a self-launch loop
+at logon while still exercising the persistence collector defensively.
 
 ## 5  Output Interpretation
 

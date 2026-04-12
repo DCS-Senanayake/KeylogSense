@@ -83,10 +83,8 @@ The acknowledgement flag is required so approved-sample runs are not mixed with 
 
 | Scenario | Purpose | Expected Outcome |
 |---|---|---|
-| `network-only-temp` | Positive control using a staged simulator copy in `%TEMP%` | Alert expected |
-| `combined-temp` | Positive control using staged simulator copy in `%TEMP%` with multiple signals | Alert expected |
-| `file-only-temp` | File telemetry probe | Alert expected only when file telemetry is actually available |
-| `persistence-only-temp` | Safety-limited persistence probe | No attributed alert currently expected |
+| `simulator-temp` | Primary positive control using a staged simulator copy in `%TEMP%` with the default combined flow | Alert expected when full telemetry is available |
+| `simulator-temp-persistence` | Positive control variant with the same combined flow plus explicitly enabled safe persistence simulation | Alert expected |
 
 **Why stage to `%TEMP%`?**
 
@@ -172,5 +170,5 @@ Before running final measurements in a VM:
 - Do not count a capability-limited scenario as a false negative.
 - Do not generalize host-machine measurements into universal effectiveness claims.
 - If ETW file telemetry is unavailable, say so explicitly.
-- If a scenario is safety-limited by design, say so explicitly.
+- If persistence is tested, describe it accurately as an inert marker simulation.
 - Treat the automated workflow as a baseline and the isolated VM run as the authoritative evaluation pass.

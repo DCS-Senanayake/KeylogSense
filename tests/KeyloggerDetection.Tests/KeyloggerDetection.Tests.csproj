@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\src\KeyloggerDetection.Monitoring\KeyloggerDetection.Monitoring.csproj" />
     <ProjectReference Include="..\..\src\KeyloggerDetection.Scoring\KeyloggerDetection.Scoring.csproj" />
     <ProjectReference Include="..\..\src\KeyloggerDetection.Infrastructure\KeyloggerDetection.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\tools\KeyloggerDetection.Simulator\KeyloggerDetection.Simulator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

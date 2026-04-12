@@ -40,10 +40,8 @@ Current automated scenarios:
 
 | Scenario | Role | Expected Outcome |
 |---|---|---|
-| `network-only-temp` | Positive control | Alert expected |
-| `combined-temp` | Positive control | Alert expected |
-| `file-only-temp` | Capability probe | Alert only if file telemetry is available |
-| `persistence-only-temp` | Safety-limited probe | No PID-attributed alert currently expected |
+| `simulator-temp` | Primary positive control | Alert expected when full telemetry is available |
+| `simulator-temp-persistence` | Persistence-enabled positive control | Alert expected |
 
 ### 3.2 Benign Application Scenarios
 
@@ -122,7 +120,7 @@ Current latency is influenced by:
 Current workflow measures process-level overhead in three phases:
 - before monitoring starts
 - during monitoring idle
-- during an active combined scenario
+- during an active simulator scenario
 
 The evaluation runner reports:
 - average CPU

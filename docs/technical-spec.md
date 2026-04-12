@@ -132,6 +132,7 @@ The project does not:
 - act as a network-wide IDS
 - automatically kill or quarantine processes
 - fake telemetry or fabricate evaluation results
+- provide offensive or stealth keylogging behaviour
 
 ## 6. Phase Status
 

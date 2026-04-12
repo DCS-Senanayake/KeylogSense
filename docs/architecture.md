@@ -197,8 +197,8 @@ Known transitional areas:
 - `PlaceholderAlertService.cs` still exists as legacy infrastructure, while the
   active user-facing alerts are delivered through the tray context
 - file telemetry coverage depends on ETW availability and elevation
-- the persistence-only simulator is intentionally safety-limited and does not
-  yet represent a full PID-attributed positive control
+- the simulator's optional persistence flag is intentionally safety-limited to
+  an inert Run-key marker for `notepad.exe`
 - final dissertation packaging is still pending
 
 ## 7. Proposal Alignment

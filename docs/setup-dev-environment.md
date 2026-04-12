@@ -104,15 +104,14 @@ Open a second PowerShell window in the repository root.
 Examples:
 
 ```powershell
-dotnet run --project tools\KeyloggerDetection.Simulator -- network-only
-dotnet run --project tools\KeyloggerDetection.Simulator -- file-only
-dotnet run --project tools\KeyloggerDetection.Simulator -- persistence-only
-dotnet run --project tools\KeyloggerDetection.Simulator -- combined
-dotnet run --project tools\KeyloggerDetection.Simulator -- cleanup
+dotnet run --project tools\KeyloggerDetection.Simulator
+dotnet run --project tools\KeyloggerDetection.Simulator -- --enable-persistence
+dotnet run --project tools\KeyloggerDetection.Simulator -- --cleanup
 ```
 
-These simulator scenarios are designed for safe academic evaluation and do not
-capture keystrokes.
+The simulator now uses one default combined behaviour flow for safe academic
+evaluation. It does not capture keystrokes. See [simulator.md](simulator.md)
+for flags, cleanup, and safety constraints.
 
 ## 6. Run The Evaluation Workflow
 

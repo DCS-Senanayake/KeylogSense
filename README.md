@@ -36,8 +36,9 @@ Important current limitations:
 - Live ETW file telemetry requires Administrator privileges
 - The tray app requests elevation on every start through an application
   manifest
-- The persistence-only simulator is intentionally safety-limited and does not
-  yet provide a full end-to-end PID-attributed positive control
+- The simulator's optional persistence flag writes an inert HKCU Run-key
+  marker for `notepad.exe`; it is a safe indicator simulation, not a real
+  persistence payload
 - P9 baseline evaluation exists, but final dissertation-grade measurements
   should still be repeated in an isolated Windows VM
 
@@ -75,7 +76,7 @@ KeylogSense/
     KeyloggerDetection.Monitoring/      Process, file, network, persistence collectors
     KeyloggerDetection.Scoring/         Scoring and allowlist logic
   tools/
-    KeyloggerDetection.Simulator/       Safe simulator scenarios
+    KeyloggerDetection.Simulator/       Safe combined behaviour simulator
     KeyloggerDetection.Evaluation/      Phase P9 evaluation runner
   tests/
     KeyloggerDetection.Tests/           Unit tests
@@ -111,9 +112,9 @@ Important:
 Run the safe simulator:
 
 ```powershell
-dotnet run --project tools\KeyloggerDetection.Simulator -- network-only
-dotnet run --project tools\KeyloggerDetection.Simulator -- combined
-dotnet run --project tools\KeyloggerDetection.Simulator -- cleanup
+dotnet run --project tools\KeyloggerDetection.Simulator
+dotnet run --project tools\KeyloggerDetection.Simulator -- --enable-persistence
+dotnet run --project tools\KeyloggerDetection.Simulator -- --cleanup
 ```
 
 Run the evaluation workflow:
@@ -153,6 +154,7 @@ Core design:
 
 Running and safety:
 - [Development Environment Setup](docs/setup-dev-environment.md)
+- [Simulator Guide](docs/simulator.md)
 - [Safe Testing Lab](docs/safe-testing-lab.md)
 - [File Behaviour Monitoring](docs/file-behaviour-monitoring.md)
 - [Non-Goals](docs/non-goals.md)

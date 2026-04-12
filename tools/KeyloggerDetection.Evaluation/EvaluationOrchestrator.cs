@@ -90,9 +90,9 @@ internal sealed class EvaluationOrchestrator
             repositoryRoot,
             Path.Combine("tools", "KeyloggerDetection.Simulator"),
             "KeyloggerDetection.Simulator.exe");
-        foreach (var scenario in BuildSimulatorScenarios(simulatorExecutable, capabilities))
+        foreach (var scenario in BuildSimulatorScenarios(capabilities, simulatorExecutable))
         {
-            var collectMetrics = string.Equals(scenario.Name, "combined-temp", StringComparison.OrdinalIgnoreCase);
+            var collectMetrics = string.Equals(scenario.Name, "simulator-temp", StringComparison.OrdinalIgnoreCase);
             results.Add(await RunProcessScenarioAsync(scenario, tracker, logger, collectMetrics ? _options.ActiveSampleSeconds : null));
         }
 
@@ -141,64 +141,38 @@ internal sealed class EvaluationOrchestrator
         return config;
     }
 
-    private List<ProcessLaunchScenario> BuildSimulatorScenarios(string simulatorExecutable, CapabilityProfile capabilities)
+    private List<ProcessLaunchScenario> BuildSimulatorScenarios(CapabilityProfile capabilities, string simulatorExecutable)
     {
         return new List<ProcessLaunchScenario>
         {
             new ProcessLaunchScenario
             {
                 ScenarioType = "simulator",
-                Name = "network-only-temp",
-                Description = "Positive control: staged simulator launched from %TEMP% to exercise suspicious location + unsigned publisher + outbound network.",
+                Name = "simulator-temp",
+                Description = "Positive control: staged simulator launched from %TEMP% with one safe combined behaviour flow covering repeated writes to the same file plus outbound network activity.",
                 SourceExecutablePath = simulatorExecutable,
-                Arguments = "network-only",
-                ExpectedAlert = true,
-                ExpectedBehaviorLabel = "Positive control",
-                StageInSuspiciousTempLocation = true,
-                TimeoutSeconds = 24
-            },
-            new ProcessLaunchScenario
-            {
-                ScenarioType = "simulator",
-                Name = "combined-temp",
-                Description = "Positive control: staged simulator launched from %TEMP% with combined network/file/persistence behaviour. Should still alert even if file telemetry is unavailable.",
-                SourceExecutablePath = simulatorExecutable,
-                Arguments = "combined",
-                ExpectedAlert = true,
-                ExpectedBehaviorLabel = "Positive control",
+                ExpectedAlert = capabilities.FileTelemetryAvailable ? true : null,
+                ExpectedBehaviorLabel = capabilities.FileTelemetryAvailable ? "Primary positive control" : "Capability-limited observation",
                 StageInSuspiciousTempLocation = true,
                 TimeoutSeconds = 24,
-                CleanupAfterScenario = true
-            },
-            new ProcessLaunchScenario
-            {
-                ScenarioType = "simulator",
-                Name = "file-only-temp",
-                Description = "File logging probe from %TEMP%. Included to measure file telemetry coverage honestly.",
-                SourceExecutablePath = simulatorExecutable,
-                Arguments = "file-only",
-                ExpectedAlert = capabilities.FileTelemetryAvailable ? true : null,
-                ExpectedBehaviorLabel = capabilities.FileTelemetryAvailable ? "File telemetry positive control" : "Capability-limited observation",
-                StageInSuspiciousTempLocation = true,
-                TimeoutSeconds = 20,
+                CleanupAfterScenario = true,
                 CapabilityLimited = !capabilities.FileTelemetryAvailable,
                 CapabilityReason = capabilities.FileTelemetryAvailable
                     ? null
-                    : "ETW file tracing is unavailable in this session, so file-write rules cannot be measured end-to-end."
+                    : "ETW file tracing is unavailable in this session, so the simulator can still exercise location, trust, and network signals, but file-write rules cannot be measured end-to-end."
             },
             new ProcessLaunchScenario
             {
                 ScenarioType = "simulator",
-                Name = "persistence-only-temp",
-                Description = "Safety-focused persistence probe. The current simulator writes an inert Run-key entry pointing to notepad.exe, so attribution to the simulator PID is not expected.",
+                Name = "simulator-temp-persistence",
+                Description = "Positive control variant: staged simulator launched from %TEMP% with the same safe combined flow plus an explicitly enabled inert persistence marker.",
                 SourceExecutablePath = simulatorExecutable,
-                Arguments = "persistence-only",
-                ExpectedAlert = false,
-                ExpectedBehaviorLabel = "Safety limitation control",
+                Arguments = "--enable-persistence",
+                ExpectedAlert = true,
+                ExpectedBehaviorLabel = "Persistence-enabled positive control",
                 StageInSuspiciousTempLocation = true,
-                TimeoutSeconds = 18,
-                CleanupAfterScenario = true,
-                Notes = "This scenario is retained to document the current attribution limitation instead of overclaiming persistence coverage."
+                TimeoutSeconds = 24,
+                CleanupAfterScenario = true
             }
         };
     }
@@ -415,7 +389,7 @@ internal sealed class EvaluationOrchestrator
         var cleanupStartInfo = new ProcessStartInfo
         {
             FileName = stagedExecutablePath,
-            Arguments = "cleanup",
+            Arguments = "--cleanup",
             WorkingDirectory = Path.GetDirectoryName(stagedExecutablePath)!,
             UseShellExecute = false,
             CreateNoWindow = true
@@ -569,7 +543,7 @@ internal sealed class EvaluationOrchestrator
 
         var baselineRow = rows.FirstOrDefault(r => r.ScenarioName == "baseline-self");
         var idleRow = rows.FirstOrDefault(r => r.ScenarioName == "monitoring-idle");
-        var activeRow = rows.FirstOrDefault(r => r.ScenarioName == "combined-temp");
+        var activeRow = rows.FirstOrDefault(r => r.ScenarioName == "simulator-temp");
 
         var builder = new StringBuilder();
         builder.AppendLine("# P9 Evaluation Summary");
@@ -629,7 +603,7 @@ internal sealed class EvaluationOrchestrator
         builder.AppendLine("|---|---:|---:|---:|---:|");
         AppendMetricRow(builder, "Baseline (before monitoring)", baselineRow);
         AppendMetricRow(builder, "Monitoring idle", idleRow);
-        AppendMetricRow(builder, "Monitoring during combined-temp", activeRow);
+        AppendMetricRow(builder, "Monitoring during simulator-temp", activeRow);
 
         builder.AppendLine();
         builder.AppendLine("## Interpretation");
@@ -653,7 +627,7 @@ internal sealed class EvaluationOrchestrator
                 builder.AppendLine($"- {warning}");
             }
         }
-        builder.AppendLine("- The persistence-only simulator remains intentionally safety-limited: it writes an inert Run-key entry for `notepad.exe`, so end-to-end attribution back to the simulator PID is not currently expected.");
+        builder.AppendLine("- The persistence-enabled simulator variant writes an inert Run-key entry for `notepad.exe`. This remains a safe indicator simulation, not a real persistence payload.");
         builder.AppendLine("- CPU and RAM figures in this workflow are process-level measurements for the evaluation host itself. Re-run inside an isolated Windows VM for dissertation-grade overhead figures and a cleaner baseline.");
         builder.AppendLine("- The tool cannot prove whether the current host is an isolated VM. Treat any approved-sample run as valid only when you have independently enforced the VM checklist in `docs/safe-testing-lab.md`.");
 
