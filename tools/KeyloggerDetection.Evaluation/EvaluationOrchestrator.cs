@@ -58,7 +58,7 @@ internal sealed class EvaluationOrchestrator
 
         using var detectionLogger = new DetectionLogFileService(config);
         var fileWriteAnalyzer = new FileWriteAnalyzer(config, clock);
-        var aggregator = new FeatureAggregator(logger, pipeline, scoringEngine, detectionLogger, fileWriteAnalyzer);
+        var aggregator = new FeatureAggregator(config, logger, pipeline, scoringEngine, detectionLogger, fileWriteAnalyzer);
         aggregator.OnSuspiciousAlert += tracker.RecordAlert;
 
         using var coordinator = new MonitoringCoordinator(
