@@ -29,12 +29,15 @@ public sealed class EtwFileCollector : ICollector
 
     public Task StartAsync(ITelemetryPipeline pipeline, CancellationToken cancellationToken)
     {
+        var isElevated = IsAdministrator();
+        _logger.LogInfo($"ETW File Collector start requested. Elevated={isElevated}.");
+
         // ETW Kernel traces require Administrator privileges safely verified here.
-        if (!IsAdministrator())
+        if (!isElevated)
         {
             _logger.LogWarning("CAPABILITY LIMITATION: ETW file tracing requires Administrator privileges.");
-            _logger.LogWarning("Real file behaviour monitoring is currently offline. The application will continue running.");
-            _logger.LogWarning("To test file logging logic safely without Admin, use the MockFileTelemetryProvider as specified in the evaluation plan.");
+            _logger.LogWarning("Real file behaviour monitoring is currently offline. The application will continue running with reduced telemetry coverage.");
+            _logger.LogWarning("Launch the tray application elevated to restore ETW-backed file telemetry.");
             return Task.CompletedTask;
         }
 
@@ -43,15 +46,21 @@ public sealed class EtwFileCollector : ICollector
 
     private void RunEtwSession(ITelemetryPipeline pipeline, CancellationToken cancellationToken)
     {
-        _logger.LogInfo("ETW File Collector starting...");
+        var sessionCreated = false;
+        var providerEnabled = false;
+        _logger.LogInfo("ETW File Collector creating kernel session...");
 
         try
         {
             // Name must be unique for generic sessions, or "NT Kernel Logger" for the kernel session.
             _session = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
+            sessionCreated = true;
+            _logger.LogInfo($"ETW kernel session created successfully: {KernelTraceEventParser.KernelSessionName}.");
 
             // Enable file IO tracing
             _session.EnableKernelProvider(KernelTraceEventParser.Keywords.FileIOInit);
+            providerEnabled = true;
+            _logger.LogInfo("ETW FileIOInit provider enabled. File telemetry session is active.");
 
             _session.Source.Kernel.FileIOWrite += data =>
             {
@@ -80,6 +89,7 @@ public sealed class EtwFileCollector : ICollector
             using var reg = cancellationToken.Register(() => _session.Stop());
 
             // This is a blocking call until stopped.
+            _logger.LogInfo("ETW File Collector processing kernel events.");
             _session.Source.Process();
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 5) // Access Denied
@@ -92,7 +102,7 @@ public sealed class EtwFileCollector : ICollector
         }
         finally
         {
-            _logger.LogInfo("ETW File Collector stopped.");
+            _logger.LogInfo($"ETW File Collector stopped. SessionCreated={sessionCreated}; ProviderEnabled={providerEnabled}.");
             _session?.Dispose();
         }
     }

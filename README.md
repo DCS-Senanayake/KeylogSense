@@ -13,7 +13,7 @@ The project is intentionally:
 - rule-based rather than machine-learning-based
 - user-mode rather than kernel-mode
 - detection-focused rather than remediation-focused
-- safe for academic evaluation with simulator-first testing
+- safe for academic testing with simulator-first validation
 
 ## Current Status
 
@@ -30,17 +30,15 @@ Implemented:
 - Allowlist support
 - CSV and text logging
 - Safe simulator tool
-- Phase P9 evaluation runner with baseline outputs
 
 Important current limitations:
-- Live ETW file telemetry requires Administrator privileges
-- The tray app requests elevation on every start through an application
-  manifest
+- Full ETW-backed file telemetry requires the tray process to be elevated
+- The built tray application embeds a `requireAdministrator` manifest
 - The simulator's optional persistence flag writes an inert HKCU Run-key
   marker for `notepad.exe`; it is a safe indicator simulation, not a real
   persistence payload
-- P9 baseline evaluation exists, but final dissertation-grade measurements
-  should still be repeated in an isolated Windows VM
+- Final dissertation-grade measurements should still be performed in an
+  isolated Windows VM, because host-machine runs are only development checks
 
 ## Detection Model
 
@@ -77,11 +75,9 @@ KeylogSense/
     KeyloggerDetection.Scoring/         Scoring and allowlist logic
   tools/
     KeyloggerDetection.Simulator/       Safe combined behaviour simulator
-    KeyloggerDetection.Evaluation/      Phase P9 evaluation runner
   tests/
     KeyloggerDetection.Tests/           Unit tests
   docs/
-  evaluation/
   KeyloggerDetection.slnx
   Project proposal.pdf
 ```
@@ -102,12 +98,11 @@ dotnet run --project src\KeyloggerDetection.App
 ```
 
 Important:
-- the app manifest uses `requireAdministrator`
-- Windows will request elevation every time the tray app starts
-- if you launch from a non-elevated terminal, `dotnet run` may fail with
-  "The requested operation requires elevation"
-- in that case, open PowerShell as Administrator or run the built `.exe`
-  manually and accept the UAC prompt
+- the built app embeds a `requireAdministrator` manifest
+- full ETW-backed file telemetry is only available when the tray process is elevated
+- on a system with UAC enabled, launching the built `.exe` from a non-elevated context should trigger the normal elevation prompt
+- `dotnet run` for this project uses the generated apphost `.exe`, so it does not intentionally bypass the manifest
+- if no prompt appears, check whether the shell is already elevated or whether UAC policy is disabled on that machine
 
 Run the safe simulator:
 
@@ -116,32 +111,6 @@ dotnet run --project tools\KeyloggerDetection.Simulator
 dotnet run --project tools\KeyloggerDetection.Simulator -- --enable-persistence
 dotnet run --project tools\KeyloggerDetection.Simulator -- --cleanup
 ```
-
-Run the evaluation workflow:
-
-```powershell
-dotnet run --project tools\KeyloggerDetection.Evaluation
-```
-
-Outputs:
-- `evaluation/results.csv`
-- `evaluation/summary.md`
-- `evaluation/artifacts/<run-id>/...`
-
-## Evaluation Snapshot
-
-The repository now includes a repeatable P9 workflow covering:
-- safe simulator scenarios
-- benign application scenarios
-- optional approved non-destructive sample scenarios through a manifest
-- detection capability
-- false positives
-- detection latency
-- CPU and RAM overhead
-
-The current baseline artifacts are already checked into `evaluation/`.
-Interpret them as measured observations for this environment, not universal
-effectiveness claims.
 
 ## Documentation
 
@@ -159,16 +128,11 @@ Running and safety:
 - [File Behaviour Monitoring](docs/file-behaviour-monitoring.md)
 - [Non-Goals](docs/non-goals.md)
 
-Testing and evaluation:
-- [Evaluation Plan](docs/evaluation-plan.md)
-- [Evaluation Workflow](docs/evaluation-workflow.md)
-- [Test Scenarios](docs/test-scenarios.md)
-
 ## Phase Status Snapshot
 
 | Phase | Description | Status |
 |---|---|---|
-| P1 | Requirements, architecture, scoring plan, evaluation plan | Complete |
+| P1 | Requirements, architecture, scoring plan, evaluation approach | Complete |
 | P2 | Setup, tray app skeleton, logging infrastructure | Complete |
 | P3 | Process context monitoring | Implemented |
 | P4 | File behaviour monitoring | Implemented, ETW elevation-dependent |
@@ -176,7 +140,7 @@ Testing and evaluation:
 | P6 | Persistence indicator, allowlist, configuration | Implemented |
 | P7 | Risk scoring engine | Implemented |
 | P8 | Alerts, tray notifications, log outputs | Implemented baseline |
-| P9 | Testing, tuning, overhead measurement, results analysis | Implemented baseline workflow and outputs |
+| P9 | Testing, tuning, overhead measurement, results analysis | Manual validation remains |
 | P10 | Final dissertation packaging and submission updates | In progress |
 
 ## Ethical Notice

@@ -30,7 +30,7 @@ the proposal but are now fixed in the implementation.
 | Assumption | `AlertThreshold` defaults to `7`. |
 | What the proposal says | The proposal requires `score > threshold` but does not define a threshold value. |
 | Rationale | A threshold of 7 reduces borderline alerts such as location plus unsigned publisher alone. |
-| Impact if wrong | The threshold is configurable and can be tuned during evaluation. |
+| Impact if wrong | The threshold is configurable and can be tuned during validation. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 
 ## A-LOCATIONS. Suspicious Location Resolution
@@ -70,7 +70,7 @@ the proposal but are now fixed in the implementation.
 | Assumption | Repeated writes to the same file default to at least `5` writes within `60` seconds. |
 | What the proposal says | The proposal says repeated writes in a short time window but does not define the count or duration. |
 | Rationale | The implementation needs concrete values to aggregate file-write events consistently. |
-| Impact if wrong | These values can be tuned in evaluation and documented as changed settings. |
+| Impact if wrong | These values can be tuned during validation and documented as changed settings. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 
 ## A-CORRELATION-WINDOW. File-Network Correlation Window
@@ -100,7 +100,7 @@ the proposal but are now fixed in the implementation.
 | Assumption | The default process monitoring interval is `5000` ms, network polling interval is `2000` ms, and persistence polling interval is `15000` ms. |
 | What the proposal says | The proposal requires real-time behaviour monitoring but does not define polling intervals. |
 | Rationale | These values provide a practical balance between responsiveness and overhead for a user-mode academic tool. |
-| Impact if wrong | Latency and CPU overhead may shift; the settings can be tuned in evaluation. |
+| Impact if wrong | Latency and CPU overhead may shift; the settings can be tuned during validation. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 
 ## A-DI-MECHANISM. Manual Composition Root
@@ -131,4 +131,4 @@ the proposal but are now fixed in the implementation.
 | What the proposal says | The proposal requires CPU and RAM overhead measurement but does not define an acceptable limit. |
 | Rationale | Reporting the measured overhead honestly is more defensible than inventing a threshold not approved in the proposal. |
 | Impact if wrong | A supervisor-defined threshold could be added later for reporting. |
-| Recorded in | `docs/evaluation-plan.md`, `docs/evaluation-workflow.md` |
+| Recorded in | `docs/safe-testing-lab.md`, `docs/technical-spec.md` |

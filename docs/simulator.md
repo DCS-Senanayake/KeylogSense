@@ -1,7 +1,7 @@
 # Simulator Guide
 
 This document describes the repository's single safe keylogger-behaviour
-simulator used for demos, evaluation, and academic testing.
+simulator used for demos, manual validation, and academic testing.
 
 ## What It Does
 
@@ -80,8 +80,8 @@ Whether an alert occurs still depends on:
 - whether the simulator is launched from a suspicious location such as `%TEMP%`
 - whether file telemetry is available in the current session
 
-The evaluation workflow stages the simulator under `%TEMP%` to exercise the
-proposal's suspicious-location rule safely.
+For focused validation, you can stage the simulator under `%TEMP%` to exercise
+the proposal's suspicious-location rule safely.
 
 ## Cleanup
 
@@ -101,5 +101,5 @@ Use the simulator only for defensive testing and academic evaluation.
 
 - Do not modify it to capture real keystrokes.
 - Do not add stealth, persistence abuse, or destructive behaviour.
-- Prefer isolated VM testing for formal evaluation.
+- Prefer isolated VM testing for formal validation.
 - Report capability limits honestly when telemetry is unavailable.

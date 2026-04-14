@@ -30,11 +30,9 @@ KeylogSense/
     KeyloggerDetection.Scoring/
   tools/
     KeyloggerDetection.Simulator/
-    KeyloggerDetection.Evaluation/
   tests/
     KeyloggerDetection.Tests/
   docs/
-  evaluation/
   KeyloggerDetection.slnx
 ```
 
@@ -72,15 +70,18 @@ The application manifest contains:
 ```
 
 This means:
-- Windows requests Administrator privileges every time the app starts
+- the built tray executable requests Administrator privileges through its
+  embedded manifest
 - if the user accepts the UAC prompt, the app launches elevated
 - if the user rejects the prompt, the app does not start
 
 Because of this manifest:
-- `dotnet run` from a non-elevated PowerShell may fail with
-  "The requested operation requires elevation"
-- the simplest development workflow is to open PowerShell as Administrator
-  before running the app
+- full ETW-backed file telemetry is only available when the tray process is
+  elevated
+- `dotnet run` uses the generated apphost executable for this project, so it
+  does not intentionally bypass the manifest
+- if no UAC prompt appears on a given machine, verify whether the shell is
+  already elevated or whether UAC policy is disabled
 
 Alternative:
 - build the solution first
@@ -110,36 +111,10 @@ dotnet run --project tools\KeyloggerDetection.Simulator -- --cleanup
 ```
 
 The simulator now uses one default combined behaviour flow for safe academic
-evaluation. It does not capture keystrokes. See [simulator.md](simulator.md)
+validation. It does not capture keystrokes. See [simulator.md](simulator.md)
 for flags, cleanup, and safety constraints.
 
-## 6. Run The Evaluation Workflow
-
-The Phase P9 runner is `tools\KeyloggerDetection.Evaluation`.
-
-Command:
-
-```powershell
-dotnet run --project tools\KeyloggerDetection.Evaluation
-```
-
-Generated outputs:
-- `evaluation/results.csv`
-- `evaluation/summary.md`
-- `evaluation/artifacts/<run-id>/...`
-
-Optional tuning overrides:
-
-```powershell
-dotnet run --project tools\KeyloggerDetection.Evaluation -- `
-  --alert-threshold 8 `
-  --monitoring-interval-ms 3000
-```
-
-For optional approved-sample evaluation, use the manifest workflow described in
-[evaluation-workflow.md](evaluation-workflow.md).
-
-## 7. Visual Studio Workflow
+## 6. Visual Studio Workflow
 
 If you use Visual Studio:
 
@@ -151,7 +126,7 @@ If you use Visual Studio:
 Recommended workload:
 - .NET desktop development
 
-## 8. VM Guidance
+## 7. VM Guidance
 
 Use an isolated Windows VM for final measurements and any approved-sample
 testing.
@@ -167,5 +142,4 @@ For approved-sample runs:
 - disable shared folders
 - revert to a clean snapshot after the session
 
-See [safe-testing-lab.md](safe-testing-lab.md) and
-[evaluation-workflow.md](evaluation-workflow.md) for the full procedure.
+See [safe-testing-lab.md](safe-testing-lab.md) for the safety procedure.

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Principal;
 using KeyloggerDetection.Core.Configuration;
 using KeyloggerDetection.Core.Interfaces;
 using KeyloggerDetection.Infrastructure.Logging;
@@ -29,6 +30,8 @@ internal static class Program
         _logger = new TextAppLogger(logDir, config.LogLevel);
         _logger.LogInfo("========================================");
         _logger.LogInfo("KeylogSense tray application started.");
+        _logger.LogInfo($"Process path: {Environment.ProcessPath ?? "<unknown>"}");
+        _logger.LogInfo($"Process elevated: {IsAdministrator()}");
         
         var detectionLogger = new DetectionLogFileService(config);
 
@@ -88,5 +91,19 @@ internal static class Program
     private static void GlobalUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
     {
         _logger?.LogError("Unhandled non-UI thread exception occurred.", e.ExceptionObject as Exception);
+    }
+
+    private static bool IsAdministrator()
+    {
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

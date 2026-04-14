@@ -10,7 +10,6 @@
     <Project Path="tests/KeyloggerDetection.Tests/KeyloggerDetection.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
-    <Project Path="tools/KeyloggerDetection.Evaluation/KeyloggerDetection.Evaluation.csproj" />
     <Project Path="tools/KeyloggerDetection.Simulator/KeyloggerDetection.Simulator.csproj" />
   </Folder>
 </Solution>

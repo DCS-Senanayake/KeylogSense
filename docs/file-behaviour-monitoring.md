@@ -36,7 +36,9 @@ KeylogSense now ships with an application manifest that sets:
 ```
 
 This means:
-- Windows shows a **UAC prompt every time the tray app starts**
+- the built tray executable requests elevation through its embedded manifest
+- if the launch context is not already elevated and UAC is enabled, Windows
+  should show the standard prompt
 - if the user approves, the app runs elevated and ETW file telemetry can start
 - if the user declines, Windows does not start the app
 
@@ -50,6 +52,6 @@ KeylogSense actively evaluates these capabilities. If the agent notices that Adm
 1. Does **not** fake a working state or fail violently.
 2. Logs a clear capability limitation warning into the internal application log.
 3. Keeps the background application running (so process scanning and other non-elevated sensors stay online).
-4. Relies fully on the pipeline architecture allowing engineers to construct and hook up the `MockFileTelemetryProvider` during safety evaluations without needing real malware.
+4. Leaves reduced-coverage operation explicit in the logs so engineers do not mistake partial telemetry for full file-behaviour coverage.
 
-See `docs/safe-testing-lab.md` for information on testing file heuristics securely with the mock provider.
+For formal validation, use an elevated tray-app run so ETW-backed file telemetry is actually available.

@@ -15,7 +15,7 @@ The current implementation is a pipeline-based Windows tray application:
 
 The system remains fully user-mode. It does not use kernel drivers or
 hypervisor components. The tray process requests Administrator privileges so
-it can start the ETW kernel file trace session needed for file telemetry.
+it can start the ETW kernel file trace session needed for full file telemetry.
 
 ## 2. Main Components
 
@@ -96,20 +96,6 @@ Current behaviour:
 - suspicious detections are written to structured output files
 - the detector's structured log contains alerts, not every telemetry event
 
-### 2.7 Evaluation Tooling
-
-Location: `tools/KeyloggerDetection.Evaluation/`
-
-The evaluation runner starts the detection stack headlessly and executes:
-- safe simulator scenarios
-- benign control scenarios
-- optional approved-sample scenarios from a manifest
-
-It writes:
-- `evaluation/results.csv`
-- `evaluation/summary.md`
-- `evaluation/artifacts/<run-id>/...`
-
 ## 3. Data Flow
 
 ```text
@@ -148,8 +134,8 @@ Tray App
 
 Important limitation:
 - ETW kernel file tracing requires Administrator privileges
-- when ETW cannot start, the project logs the limitation honestly instead of
-  pretending file telemetry is available
+- without elevation the file collector stays offline, so full telemetry
+  coverage is not available
 
 ### 4.3 Network Behaviour
 
@@ -176,9 +162,12 @@ The tray application includes an application manifest with:
 ```
 
 Operational effect:
-- Windows shows a UAC prompt each time the tray app starts
+- the built tray executable embeds `requireAdministrator`
+- when launched from a non-elevated context on a system with UAC enabled,
+  Windows should show the standard elevation prompt
 - approving the prompt launches the app elevated
-- declining the prompt prevents startup
+- if the process is already elevated or UAC policy is disabled, there may be
+  no interactive prompt even though the manifest is present
 
 This remains a user-mode application. Elevation is required for telemetry
 coverage, not because the project includes a kernel-mode component.
@@ -191,7 +180,6 @@ Implemented:
 - tray notifications
 - structured detection logging
 - safe simulator
-- repeatable P9 evaluation workflow
 
 Known transitional areas:
 - `PlaceholderAlertService.cs` still exists as legacy infrastructure, while the
@@ -214,4 +202,3 @@ Known transitional areas:
 | Tray UI | `TrayApplicationContext` |
 | Alert notification | tray balloon notifications |
 | Logging and reporting | `DetectionLogFileService`, `TextAppLogger` |
-| Evaluation metrics | evaluation runner plus generated artifacts |

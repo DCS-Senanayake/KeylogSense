@@ -97,7 +97,6 @@ Implementation status:
 The system must produce:
 - application logs
 - suspicious detection logs
-- evaluation outputs for Phase P9
 
 Implementation status:
 - implemented
@@ -107,7 +106,7 @@ Implementation status:
 | Requirement | Status |
 |---|---|
 | User-mode only | Met |
-| Lightweight, monitor-oriented design | Met in architecture; measured in P9 |
+| Lightweight, monitor-oriented design | Met in architecture; formal measurement remains pending |
 | Windows 11 target | Met |
 | C# and modern .NET | Met |
 | Privacy-preserving, no keystroke capture | Met |
@@ -121,8 +120,7 @@ The repository currently contains:
 2. A scoring engine with explainable rules
 3. Structured logging for alerts and runtime activity
 4. A safe simulator tool
-5. A repeatable P9 evaluation runner
-6. Documentation for setup, scoring, safety, and evaluation
+5. Documentation for setup, scoring, safety, and architecture
 
 ## 5. Constraints
 
@@ -146,14 +144,14 @@ The project does not:
 | P6 | Implemented |
 | P7 | Implemented |
 | P8 | Implemented baseline |
-| P9 | Implemented baseline workflow and outputs |
+| P9 | Validation and measurement still to be finalized |
 | P10 | In progress |
 
 ## 7. Remaining Work
 
 The main remaining work is not foundational architecture. It is project
 completion work:
-- repeat or extend P9 measurements in an isolated VM
+- perform focused P9 measurements in an isolated VM
 - tune thresholds only if the evidence justifies it
 - refine persistence attribution if needed
 - finish final submission packaging and reporting

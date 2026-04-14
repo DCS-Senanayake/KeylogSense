@@ -79,12 +79,12 @@ Every formal test pass should record:
 - CPU overhead
 - RAM overhead
 
-The repeatable repo workflow for this is documented in
-[evaluation-workflow.md](evaluation-workflow.md).
+Record these measurements manually in your dissertation notes or lab worksheet
+because the repository does not currently ship an evaluation runner.
 
 ## 5. Log Handling
 
-- Keep detector and evaluation logs for analysis only
+- Keep detector logs and lab notes for analysis only
 - Do not store real keystroke content in logs
 - Export only the files needed for reporting
 - Remove unnecessary sample artifacts after the evaluation session
@@ -93,7 +93,7 @@ The repeatable repo workflow for this is documented in
 
 - clean VM snapshot available
 - latest build copied or built inside the VM
-- evaluation plan for the session written down
+- test plan for the session written down
 - baseline environment noted
-- output files collected after the run
+- output files and observations collected after the run
 - VM reverted or cleaned after the session
