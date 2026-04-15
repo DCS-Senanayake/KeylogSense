@@ -57,9 +57,9 @@ the proposal but are now fixed in the implementation.
 
 | Field | Value |
 |---|---|
-| Assumption | Frequent small writes default to at least `10` writes with each write at most `1024` bytes. |
+| Assumption | Frequent small writes default to at least `12` writes with each write at most `512` bytes. |
 | What the proposal says | The proposal requires repeated small file writes but does not define numeric thresholds. |
-| Rationale | The defaults give a concrete starting point for P4 and P9 without claiming they are universal. |
+| Rationale | The defaults were tightened during tuning to reduce false positives while preserving the intended log-like write pattern. |
 | Impact if wrong | Tuning may be needed to improve sensitivity or reduce false positives. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 
@@ -67,9 +67,9 @@ the proposal but are now fixed in the implementation.
 
 | Field | Value |
 |---|---|
-| Assumption | Repeated writes to the same file default to at least `5` writes within `60` seconds. |
+| Assumption | Repeated writes to the same file default to at least `8` writes within `30` seconds. |
 | What the proposal says | The proposal says repeated writes in a short time window but does not define the count or duration. |
-| Rationale | The implementation needs concrete values to aggregate file-write events consistently. |
+| Rationale | The implementation needs concrete values to aggregate file-write events consistently, and the tighter defaults reduce noise from ordinary application writes. |
 | Impact if wrong | These values can be tuned during validation and documented as changed settings. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 
@@ -77,9 +77,9 @@ the proposal but are now fixed in the implementation.
 
 | Field | Value |
 |---|---|
-| Assumption | File and network correlation defaults to a `30` second window. |
+| Assumption | File and network correlation defaults to a `10` second window. |
 | What the proposal says | The proposal says file and network activity should be correlated when they occur close in time, but it does not define the window. |
-| Rationale | A fixed correlation window is required for deterministic scoring. |
+| Rationale | A fixed correlation window is required for deterministic scoring, and a tighter burst window reduces false positives from unrelated background activity. |
 | Impact if wrong | A wider or narrower window may change alert sensitivity. |
 | Recorded in | `docs/scoring-plan.md`, `src/KeyloggerDetection.Core/Configuration/DetectionConfig.cs` |
 

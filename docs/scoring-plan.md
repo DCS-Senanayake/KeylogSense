@@ -81,8 +81,8 @@ Current default:
 - `AlertThreshold = 7`
 
 Important:
-- score `7` is not an alert
-- score `8` is an alert
+- score `7` is not suspicious
+- score `8` is suspicious
 
 User-facing alerting now adds one extra guardrail on top of the strict score
 rule:
@@ -145,17 +145,17 @@ Current tuning:
 ### R3. Frequent Small File Writes
 
 Current default interpretation:
-- each counted write is at most `1024` bytes
-- the behaviour becomes suspicious when at least `10` such writes are observed
+- each counted write is at most `512` bytes
+- the behaviour becomes suspicious when at least `12` such writes are observed
 
 This captures log-like repeated small writes as described in the proposal.
 
 ### R4. Repeated Writes To The Same File
 
 Current default interpretation:
-- at least `5` writes
+- at least `8` writes
 - to the same file
-- within `60` seconds
+- within `30` seconds
 
 ### R5. Outbound Network Connections
 

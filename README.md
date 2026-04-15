@@ -57,11 +57,16 @@ weights:
 
 Default threshold:
 - `AlertThreshold = 7`
-- alert condition is strictly `score > threshold`
+- suspicious-score condition is strictly `score > threshold`
+- user-facing tray alerts require both `score > threshold` and the alert
+  guardrail to pass
 
 That means:
-- score `7` is not an alert
-- score `8` is an alert
+- score `7` is not suspicious
+- score `8` is suspicious
+- score `8` only raises a tray alert when at least one stronger behavioural
+  signal is present, such as file-write indicators, file/network correlation,
+  or persistence
 
 ## Solution Structure
 

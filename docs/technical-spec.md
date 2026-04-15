@@ -62,7 +62,7 @@ Implementation status:
 The system must:
 - use an additive rule-based score
 - implement the proposal's score weights as defaults
-- flag only when `score > threshold`
+- mark a result as suspicious only when `score > threshold`
 - keep the threshold configurable
 - return triggered rules and reasons
 
@@ -91,6 +91,12 @@ When a process is flagged, the system must provide:
 
 Implementation status:
 - implemented through tray balloon notifications and structured logs
+
+Important implementation detail:
+- `DetectionResult.IsSuspicious` is still strictly `score > threshold`
+- user-facing tray alerts additionally require the alert guardrail to pass, so
+  weak-signal-only score combinations are suppressed from the tray even when
+  they exceed the threshold
 
 ### FR-8. Logging And Reporting
 
