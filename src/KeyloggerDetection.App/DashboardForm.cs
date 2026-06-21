@@ -94,12 +94,24 @@ internal sealed class DashboardForm : Form
         RefreshData();
     }
 
+    private Icon? LoadAppIcon()
+    {
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico");
+        return File.Exists(iconPath) ? new Icon(iconPath) : null;
+    }
+
     private void InitializeComponent()
     {
         this.Text = "KeylogSense";
         this.Size = new Size(1000, 700);
         this.MinimumSize = new Size(800, 600);
         this.StartPosition = FormStartPosition.CenterScreen;
+
+        var appIcon = LoadAppIcon();
+        if (appIcon != null)
+        {
+            this.Icon = appIcon;
+        }
 
         _tabControl = new TabControl { Dock = DockStyle.Fill, Padding = new Point(10, 5) };
         
@@ -396,16 +408,16 @@ internal sealed class DashboardForm : Form
         pnlName.Controls.Add(_lstTrustedNames);
         layout.Controls.Add(pnlName, 2, 0);
 
-        var inputPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight };
-        _cboAllowlistType = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
+        var inputPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(0, 10, 0, 0) };
+        _cboAllowlistType = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150, Margin = new Padding(0, 4, 10, 0) };
         _cboAllowlistType.Items.AddRange(new[] { "Publisher", "Path", "Process Name" });
         _cboAllowlistType.SelectedIndex = 0;
         
-        _txtAddAllowlist = new TextBox { Width = 300 };
-        _btnAddAllowlist = new Button { Text = "Add", Width = 80 };
+        _txtAddAllowlist = new TextBox { Width = 300, Margin = new Padding(0, 4, 10, 0) };
+        _btnAddAllowlist = new Button { Text = "Add", Width = 130, Height = 30, Margin = new Padding(0, 0, 10, 0) };
         _btnAddAllowlist.Click += (s, e) => AddAllowlistEntry();
 
-        _btnRemoveAllowlist = new Button { Text = "Remove Selected", Width = 120 };
+        _btnRemoveAllowlist = new Button { Text = "Remove Selected", Width = 130, Height = 30 };
         _btnRemoveAllowlist.Click += (s, e) => RemoveAllowlistEntry();
 
         inputPanel.Controls.AddRange(new Control[] { _cboAllowlistType, _txtAddAllowlist, _btnAddAllowlist, _btnRemoveAllowlist });
@@ -413,7 +425,7 @@ internal sealed class DashboardForm : Form
         layout.SetColumnSpan(inputPanel, 3);
 
         var bottomPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft };
-        _btnSaveAllowlist = new Button { Text = "Save Allowlist", Width = 120, Height = 30 };
+        _btnSaveAllowlist = new Button { Text = "Save Allowlist", Width = 130, Height = 30, Margin = new Padding(0, 0, 5, 0) };
         _btnSaveAllowlist.Click += (s, e) => SaveAllowlist();
         bottomPanel.Controls.Add(_btnSaveAllowlist);
         layout.Controls.Add(bottomPanel, 0, 2);

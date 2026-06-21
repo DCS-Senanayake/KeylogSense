@@ -19,6 +19,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private readonly NotifyIcon _notifyIcon;
     private readonly ToolStripMenuItem _startMenuItem;
     private readonly ToolStripMenuItem _stopMenuItem;
+    private readonly Icon _appIcon;
 
     private MonitoringState _state = MonitoringState.Stopped;
     private readonly IAppLogger _logger;
@@ -62,11 +63,21 @@ internal sealed class TrayApplicationContext : ApplicationContext
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(exitItem);
 
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            _appIcon = new Icon(iconPath);
+        }
+        else
+        {
+            _appIcon = CreatePlaceholderIcon(Color.Gray);
+        }
+
         // Create the tray icon
         _notifyIcon = new NotifyIcon
         {
             Text = "KeylogSense — Monitoring Stopped",
-            Icon = CreatePlaceholderIcon(Color.Gray),
+            Icon = _appIcon,
             ContextMenuStrip = contextMenu,
             Visible = true
         };
@@ -164,21 +175,18 @@ internal sealed class TrayApplicationContext : ApplicationContext
         Application.Exit();
     }
 
-    /// <summary>
-    /// Updates the tray icon and menu state based on the current monitoring state.
-    /// </summary>
     private void UpdateTrayState()
     {
         if (_state == MonitoringState.Running)
         {
-            _notifyIcon.Icon = CreatePlaceholderIcon(Color.Green);
+            _notifyIcon.Icon = _appIcon;
             _notifyIcon.Text = "KeylogSense — Monitoring Active";
             _startMenuItem.Enabled = false;
             _stopMenuItem.Enabled = true;
         }
         else
         {
-            _notifyIcon.Icon = CreatePlaceholderIcon(Color.Gray);
+            _notifyIcon.Icon = _appIcon;
             _notifyIcon.Text = "KeylogSense — Monitoring Stopped";
             _startMenuItem.Enabled = true;
             _stopMenuItem.Enabled = false;
@@ -244,6 +252,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
             }
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
+            _appIcon.Dispose();
             _coordinator.Dispose();
         }
         base.Dispose(disposing);

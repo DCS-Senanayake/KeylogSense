@@ -24,6 +24,9 @@ Engineering note:
 KeylogSense/
   src/
     KeyloggerDetection.App/
+      Assets/
+        icon.png
+        icon.ico
     KeyloggerDetection.Core/
     KeyloggerDetection.Infrastructure/
     KeyloggerDetection.Monitoring/

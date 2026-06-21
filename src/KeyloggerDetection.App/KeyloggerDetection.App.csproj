@@ -8,8 +8,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>KeyloggerDetection.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KeyloggerDetection.Core\KeyloggerDetection.Core.csproj" />
