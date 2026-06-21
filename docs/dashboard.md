@@ -1,6 +1,6 @@
 # Dashboard
 
-This document describes the simple WinForms dashboard added to KeylogSense.
+This document describes the simple WinForms dashboard added to KeylogSense. The dashboard window is cleanly titled `KeylogSense` and manages the background monitoring, which now starts automatically upon application launch.
 
 ## Purpose
 

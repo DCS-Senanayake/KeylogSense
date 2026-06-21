@@ -91,7 +91,7 @@ Alternative:
 ### 4.2 Tray Behaviour
 
 After launch:
-- the app appears in the Windows system tray
+- the app appears in the Windows system tray and automatically starts monitoring
 - right-click the tray icon to access:
   - Open Dashboard
   - Start Monitoring

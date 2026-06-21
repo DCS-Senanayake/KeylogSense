@@ -73,6 +73,7 @@ Implementation status:
 
 The system must provide:
 - tray icon presence
+- auto-start monitoring on application launch
 - Open Dashboard
 - Start Monitoring
 - Stop Monitoring

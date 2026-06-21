@@ -72,6 +72,19 @@ internal sealed class TrayApplicationContext : ApplicationContext
         };
 
         UpdateTrayState();
+
+        // Auto-start monitoring on launch
+        try
+        {
+            _logger.LogInfo("Auto-starting monitoring on application launch.");
+            _coordinator.Start();
+            _state = MonitoringState.Running;
+            UpdateTrayState();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to auto-start monitoring on launch.", ex);
+        }
     }
 
     private void OnStartMonitoring(object? sender, EventArgs e)

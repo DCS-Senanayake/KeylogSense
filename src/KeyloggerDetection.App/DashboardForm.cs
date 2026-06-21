@@ -96,16 +96,17 @@ internal sealed class DashboardForm : Form
 
     private void InitializeComponent()
     {
-        this.Text = "KeylogSense Dashboard";
+        this.Text = "KeylogSense";
         this.Size = new Size(1000, 700);
+        this.MinimumSize = new Size(800, 600);
         this.StartPosition = FormStartPosition.CenterScreen;
 
-        _tabControl = new TabControl { Dock = DockStyle.Fill };
+        _tabControl = new TabControl { Dock = DockStyle.Fill, Padding = new Point(10, 5) };
         
-        var tabLive = new TabPage("Live Monitoring");
-        var tabLogs = new TabPage("Previous Logs");
-        var tabAllowlist = new TabPage("Allowlist");
-        var tabConfig = new TabPage("Configuration");
+        var tabLive = new TabPage("Live Monitoring") { Padding = new Padding(10) };
+        var tabLogs = new TabPage("Previous Logs") { Padding = new Padding(10) };
+        var tabAllowlist = new TabPage("Allowlist") { Padding = new Padding(10) };
+        var tabConfig = new TabPage("Configuration") { Padding = new Padding(10) };
 
         _tabControl.TabPages.Add(tabLive);
         _tabControl.TabPages.Add(tabLogs);
@@ -190,16 +191,16 @@ internal sealed class DashboardForm : Form
         layout.Controls.Add(_gridAlerts, 0, 1);
 
         var bottomPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight };
-        _btnStart = new Button { Text = "Start Monitoring", Width = 120, Height = 30 };
+        _btnStart = new Button { Text = "Start Monitoring", Width = 130, Height = 30 };
         _btnStart.Click += (s, e) => { _onStart(); RefreshData(); };
         
-        _btnStop = new Button { Text = "Stop Monitoring", Width = 120, Height = 30 };
+        _btnStop = new Button { Text = "Stop Monitoring", Width = 130, Height = 30 };
         _btnStop.Click += (s, e) => { _onStop(); RefreshData(); };
 
-        _btnLogs = new Button { Text = "Open Logs Folder", Width = 120, Height = 30 };
+        _btnLogs = new Button { Text = "Open Logs Folder", Width = 130, Height = 30 };
         _btnLogs.Click += (s, e) => _onOpenLogs();
 
-        _btnRefresh = new Button { Text = "Refresh", Width = 100, Height = 30 };
+        _btnRefresh = new Button { Text = "Refresh", Width = 110, Height = 30 };
         _btnRefresh.Click += (s, e) => RefreshData();
 
         bottomPanel.Controls.AddRange(new Control[] { _btnStart, _btnStop, _btnLogs, _btnRefresh });
@@ -242,19 +243,19 @@ internal sealed class DashboardForm : Form
         tab.Controls.Add(layout);
 
         var topPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight };
-        _cboLogFiles = new ComboBox { Width = 250, DropDownStyle = ComboBoxStyle.DropDownList };
+        _cboLogFiles = new ComboBox { Width = 250, DropDownStyle = ComboBoxStyle.DropDownList, Margin = new Padding(0, 4, 10, 0) };
         _cboLogFiles.SelectedIndexChanged += (s, e) => LoadSelectedLogFile();
 
-        _btnRefreshLogsList = new Button { Text = "Refresh List", Width = 100, Height = 25 };
+        _btnRefreshLogsList = new Button { Text = "Refresh List", Width = 120, Height = 30 };
         _btnRefreshLogsList.Click += (s, e) => RefreshLogsList();
 
-        _btnDeleteLog = new Button { Text = "Delete File", Width = 100, Height = 25 };
+        _btnDeleteLog = new Button { Text = "Delete File", Width = 120, Height = 30 };
         _btnDeleteLog.Click += (s, e) => DeleteSelectedLog();
 
-        _btnOpenLogsFolder = new Button { Text = "Open Logs Folder", Width = 120, Height = 25 };
+        _btnOpenLogsFolder = new Button { Text = "Open Logs Folder", Width = 130, Height = 30 };
         _btnOpenLogsFolder.Click += (s, e) => _onOpenLogs();
 
-        topPanel.Controls.AddRange(new Control[] { new Label { Text = "Select Log File:", AutoSize = true, Padding = new Padding(0, 5, 0, 0) }, _cboLogFiles, _btnRefreshLogsList, _btnDeleteLog, _btnOpenLogsFolder });
+        topPanel.Controls.AddRange(new Control[] { new Label { Text = "Select Log File:", AutoSize = true, Padding = new Padding(0, 8, 5, 0) }, _cboLogFiles, _btnRefreshLogsList, _btnDeleteLog, _btnOpenLogsFolder });
         layout.Controls.Add(topPanel, 0, 0);
 
         _gridLogs = new DataGridView
@@ -263,7 +264,7 @@ internal sealed class DashboardForm : Form
             AllowUserToAddRows = false,
             ReadOnly = true,
             SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells,
+            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
             RowHeadersVisible = false
         };
         layout.Controls.Add(_gridLogs, 0, 1);

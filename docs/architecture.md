@@ -34,7 +34,8 @@ Key classes:
 Responsibilities:
 - bootstraps configuration and logging (reads from `config.json` via `ConfigManager`)
 - manually composes the runtime services
-- starts and stops monitoring from the tray menu
+- starts monitoring automatically on launch
+- provides manual start and stop controls from the tray menu
 - provides a Dashboard window for real-time telemetry observation and configuration management
 - shows balloon notifications for suspicious detections
 
