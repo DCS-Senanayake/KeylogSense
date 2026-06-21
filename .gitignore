@@ -52,3 +52,10 @@ Desktop.ini
 
 ## Publish output
 publish/
+
+## Application config
+config*.json
+
+## Temporary notes
+*.scratch.md
+*.tmp

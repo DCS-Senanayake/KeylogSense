@@ -157,7 +157,7 @@ The project does not:
 | P5 | Implemented |
 | P6 | Implemented |
 | P7 | Implemented |
-| P8 | Implemented baseline |
+| P8 | Implemented |
 | P9 | Validation and measurement still to be finalized |
 | P10 | In progress |
 

@@ -183,11 +183,11 @@ Implemented:
 - rule-based scoring with explainable reasons
 - tray notifications
 - structured detection logging
+- WinForms Dashboard for live monitoring, log viewing, allowlist and configuration management
+- persistent threshold and configuration tuning with reset-to-defaults
 - safe simulator
 
 Known transitional areas:
-- `PlaceholderAlertService.cs` still exists as legacy infrastructure, while the
-  active user-facing alerts are delivered through the tray context
 - file telemetry coverage depends on ETW availability and elevation
 - the simulator's optional persistence flag is intentionally safety-limited to
   an inert Run-key marker for `notepad.exe`

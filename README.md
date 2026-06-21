@@ -20,14 +20,16 @@ The project is intentionally:
 The repository is functional and no longer a skeleton.
 
 Implemented:
-- WinForms tray application with Start Monitoring, Stop Monitoring, Open Logs,
-  and Exit
+- WinForms tray application with Start Monitoring, Stop Monitoring, Open Logs, and Exit
+- Auto-start monitoring on app launch
+- Dashboard UI with Live Monitoring, Previous Logs viewer, Allowlist management, and Configuration tuning
+- Application icon integration
 - Process context monitoring
 - ETW-based file behaviour collection and file-write analysis
 - Network behaviour monitoring using TCP table snapshots
 - Persistence polling for Run, RunOnce, and Startup-folder changes
+- Persistent threshold/configuration management with reset-to-defaults
 - Rule-based scoring with explainable triggered reasons
-- Allowlist support
 - CSV and text logging
 - Safe simulator tool
 
@@ -122,6 +124,7 @@ dotnet run --project tools\KeyloggerDetection.Simulator -- --cleanup
 Core design:
 - [Technical Specification](docs/technical-spec.md)
 - [System Architecture](docs/architecture.md)
+- [Dashboard](docs/dashboard.md)
 - [Scoring Plan](docs/scoring-plan.md)
 - [Tooling Decisions](docs/tooling-decisions.md)
 - [Proposal Assumptions Register](docs/proposal-assumptions.md)
@@ -144,7 +147,7 @@ Running and safety:
 | P5 | Network behaviour monitoring | Implemented |
 | P6 | Persistence indicator, allowlist, configuration | Implemented |
 | P7 | Risk scoring engine | Implemented |
-| P8 | Alerts, tray notifications, log outputs | Implemented baseline |
+| P8 | Alerts, tray notifications, log outputs, dashboard | Implemented |
 | P9 | Testing, tuning, overhead measurement, results analysis | Manual validation remains |
 | P10 | Final dissertation packaging and submission updates | In progress |
 
