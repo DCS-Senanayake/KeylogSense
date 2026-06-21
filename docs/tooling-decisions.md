@@ -33,6 +33,7 @@ Rationale:
 
 Decision:
 - the system tray UI is implemented with WinForms
+- the real-time observation Dashboard is also implemented using WinForms programmatic UI layout (no `.resx` designers)
 
 Proposal linkage:
 - the proposal calls for a tray application with menu actions and alert
@@ -40,6 +41,7 @@ Proposal linkage:
 
 Rationale:
 - WinForms provides a direct and lightweight `NotifyIcon`-based implementation
+- programmatic UI creation keeps the project structure minimal without designer dependencies
 
 ## Decision 4. Telemetry Sources Are Now Committed
 

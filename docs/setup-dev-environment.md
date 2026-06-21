@@ -93,6 +93,7 @@ Alternative:
 After launch:
 - the app appears in the Windows system tray
 - right-click the tray icon to access:
+  - Open Dashboard
   - Start Monitoring
   - Stop Monitoring
   - Open Logs

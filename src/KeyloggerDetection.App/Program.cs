@@ -68,7 +68,7 @@ internal static class Program
         // 6. Run Tray Applicaton
         try
         {
-            using var trayContext = new TrayApplicationContext(_logger, coordinator);
+            using var trayContext = new TrayApplicationContext(_logger, coordinator, config, IsAdministrator());
             Application.Run(trayContext);
         }
         catch (Exception ex)

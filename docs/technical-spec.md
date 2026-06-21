@@ -73,13 +73,14 @@ Implementation status:
 
 The system must provide:
 - tray icon presence
+- Open Dashboard
 - Start Monitoring
 - Stop Monitoring
 - Open Logs
 - Exit
 
 Implementation status:
-- implemented
+- implemented (including a WinForms dashboard for real-time observation)
 
 ### FR-7. Alerts
 

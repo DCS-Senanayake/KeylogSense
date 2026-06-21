@@ -26,6 +26,7 @@ Location: `src/KeyloggerDetection.App/`
 Key classes:
 - `Program.cs`
 - `TrayApplicationContext.cs`
+- `DashboardForm.cs`
 - `MonitoringCoordinator.cs`
 - `FeatureAggregator.cs`
 
@@ -33,6 +34,7 @@ Responsibilities:
 - bootstraps configuration and logging
 - manually composes the runtime services
 - starts and stops monitoring from the tray menu
+- provides a Dashboard window for real-time telemetry observation
 - shows balloon notifications for suspicious detections
 
 ### 2.2 Telemetry Collectors
@@ -110,7 +112,7 @@ Tray App
   -> FeatureAggregator
   -> RiskScoringEngine + AllowlistManager
   -> DetectionLogFileService
-  -> Tray balloon notification
+  -> Tray balloon notification AND Dashboard Grid
 ```
 
 ## 4. Collector Notes

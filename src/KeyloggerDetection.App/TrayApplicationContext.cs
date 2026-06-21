@@ -1,3 +1,4 @@
+using KeyloggerDetection.Core.Configuration;
 using KeyloggerDetection.Core.Interfaces;
 using KeyloggerDetection.Core.Models;
 
@@ -22,11 +23,20 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private MonitoringState _state = MonitoringState.Stopped;
     private readonly IAppLogger _logger;
     private readonly IMonitoringCoordinator _coordinator;
+    private readonly DetectionConfig _config;
+    private readonly bool _isElevated;
 
-    public TrayApplicationContext(IAppLogger logger, IMonitoringCoordinator coordinator)
+    private DashboardForm? _dashboard;
+    private readonly List<DashboardAlert> _recentAlerts = new();
+
+    public record DashboardAlert(DateTime Time, string ProcessName, int Pid, int Score, string Reasons);
+
+    public TrayApplicationContext(IAppLogger logger, IMonitoringCoordinator coordinator, DetectionConfig config, bool isElevated)
     {
         _logger = logger;
         _coordinator = coordinator;
+        _config = config;
+        _isElevated = isElevated;
 
         if (_coordinator is App.MonitoringCoordinator appCoordinator)
         {
@@ -38,10 +48,13 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _stopMenuItem = new ToolStripMenuItem("Stop Monitoring", null, OnStopMonitoring);
         _stopMenuItem.Enabled = false; // Disabled when not monitoring
 
+        var openDashboardItem = new ToolStripMenuItem("Open Dashboard", null, OnOpenDashboard);
         var openLogsItem = new ToolStripMenuItem("Open Logs", null, OnOpenLogs);
         var exitItem = new ToolStripMenuItem("Exit", null, OnExit);
 
         var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add(openDashboardItem);
+        contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(_startMenuItem);
         contextMenu.Items.Add(_stopMenuItem);
         contextMenu.Items.Add(new ToolStripSeparator());
@@ -67,6 +80,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _coordinator.Start();
         _state = MonitoringState.Running;
         UpdateTrayState();
+        _dashboard?.RefreshData();
     }
 
     private void OnStopMonitoring(object? sender, EventArgs e)
@@ -75,6 +89,32 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _coordinator.Stop();
         _state = MonitoringState.Stopped;
         UpdateTrayState();
+        _dashboard?.RefreshData();
+    }
+
+    private void OnOpenDashboard(object? sender, EventArgs e)
+    {
+        if (_dashboard == null || _dashboard.IsDisposed)
+        {
+            _dashboard = new DashboardForm(
+                _config,
+                _isElevated,
+                () => _state,
+                () => OnStartMonitoring(null, EventArgs.Empty),
+                () => OnStopMonitoring(null, EventArgs.Empty),
+                () => OnOpenLogs(null, EventArgs.Empty),
+                () => _recentAlerts
+            );
+            _dashboard.Show();
+        }
+        else
+        {
+            if (_dashboard.WindowState == FormWindowState.Minimized)
+            {
+                _dashboard.WindowState = FormWindowState.Normal;
+            }
+            _dashboard.Activate();
+        }
     }
 
     private void OnOpenLogs(object? sender, EventArgs e)
@@ -168,6 +208,11 @@ internal sealed class TrayApplicationContext : ApplicationContext
                    $"Risk Score: {result.TotalScore}/{result.Threshold}\n" +
                    $"Reasons: {shortReasons}";
 
+        _recentAlerts.Add(new DashboardAlert(result.EvaluationTime, result.ProcessIdentity.Name ?? "Unknown", result.ProcessIdentity.Pid, result.TotalScore, shortReasons));
+        if (_recentAlerts.Count > 100) _recentAlerts.RemoveAt(0);
+
+        _dashboard?.RefreshData();
+
         _notifyIcon.ShowBalloonTip(5000, title, text, ToolTipIcon.Warning);
     }
 
@@ -175,6 +220,10 @@ internal sealed class TrayApplicationContext : ApplicationContext
     {
         if (disposing)
         {
+            if (_dashboard != null && !_dashboard.IsDisposed)
+            {
+                _dashboard.Dispose();
+            }
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
             _coordinator.Dispose();
