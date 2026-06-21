@@ -15,9 +15,11 @@ The project remains user-mode only. It does not include:
 
 The system detects and alerts only. It does not:
 - kill suspicious processes
-- quarantine files
+- quarantine malicious files
 - delete registry entries
 - block network traffic automatically
+
+*Note: The dashboard allows deleting the application's own telemetry log files, but this is for storage management, not malware remediation.*
 
 ### NG-3. No Network-Wide IDS
 

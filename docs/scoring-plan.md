@@ -108,7 +108,7 @@ The active defaults in `DetectionConfig` are:
 | `FileNetworkCorrelationWindowSeconds` | 10 |
 | `PersistencePollingIntervalMs` | 15000 |
 
-These are engineering defaults, not proposal-mandated constants.
+These are engineering defaults, not proposal-mandated constants. They are preserved in code but user-configured thresholds persist across restarts via the `config.json` file.
 
 ## 4. Rule Semantics
 

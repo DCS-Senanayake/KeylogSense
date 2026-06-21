@@ -103,7 +103,12 @@ internal sealed class TrayApplicationContext : ApplicationContext
                 () => OnStartMonitoring(null, EventArgs.Empty),
                 () => OnStopMonitoring(null, EventArgs.Empty),
                 () => OnOpenLogs(null, EventArgs.Empty),
-                () => _recentAlerts
+                () => _recentAlerts,
+                _logger,
+                (updatedConfig) => 
+                {
+                    ConfigManager.Save(updatedConfig);
+                }
             );
             _dashboard.Show();
         }

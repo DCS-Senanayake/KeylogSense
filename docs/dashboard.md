@@ -8,22 +8,33 @@ The dashboard provides a consolidated view of the current monitoring state, tele
 
 ## UI Sections
 
-1. **Top Panel**: Displays real-time status.
-   - **Monitoring Status**: Running / Stopped.
-   - **Telemetry Status**: Current availability of Process, File, Network, and Persistence telemetry. Notes whether File ETW telemetry is active or offline (due to lack of Administrator privileges).
-   - **Alert Count**: Total suspicious activity detections since launch.
-   - **Last Alert Time**: Timestamp of the most recent alert.
-   - **Current Scoring Threshold**: Summarizes the configured threshold and the weights for each behaviour rule.
+The dashboard is structured into four main tabs:
 
-2. **Detections Grid**: A data table showing recent alerts.
-   - Includes Time, Process Name, PID, Risk Score, and the Triggered Reasons.
-   - Displays up to the last 100 recent alerts.
+### 1. Live Monitoring
+- **Top Panel**: Displays real-time status.
+  - **Monitoring Status**: Running / Stopped.
+  - **Telemetry Status**: Current availability of Process, File, Network, and Persistence telemetry.
+  - **Alert Count**: Total suspicious activity detections since launch.
+  - **Last Alert Time**: Timestamp of the most recent alert.
+  - **Current Scoring Threshold**: Summarizes the configured threshold and weights.
+- **Detections Grid**: A data table showing recent alerts. Displays up to the last 100 recent alerts. Includes a context menu to quickly add an alerted process to the Allowlist.
+- **Control Buttons**: Start Monitoring, Stop Monitoring, Open Logs Folder, Refresh Data.
 
-3. **Control Buttons**:
-   - Start Monitoring
-   - Stop Monitoring
-   - Open Logs
-   - Refresh Data
+### 2. Previous Logs
+- A viewer for historical detection CSV files.
+- Provides a dropdown to select any existing log file.
+- Renders the CSV data in a readable grid.
+- Allows deleting selected log files safely.
+
+### 3. Allowlist Management
+- Provides list views for Trusted Publishers, Trusted Paths, and Trusted Process Names.
+- Allows manually adding and removing entries.
+- Saves changes persistently across application restarts.
+
+### 4. Configuration Management
+- Allows tuning of the `AlertThreshold` and all telemetry monitoring intervals and counts.
+- **Save Configuration**: Persists the changes to a local `config.json` file.
+- **Reset to Defaults**: Restores all configuration values to their factory defaults.
 
 ## Architecture Connection
 
@@ -34,8 +45,7 @@ The `DashboardForm` integrates with the existing `TrayApplicationContext`:
 
 ## Limitations
 
-- The dashboard provides a read-only view of recent alerts. It is not a persistent historical database.
-- It does not modify configuration files; it only displays the active defaults.
+- The live monitoring grid provides a read-only view of recent alerts. It is not a persistent historical database (historical data is in the Previous Logs tab).
 - The UI is built entirely in code (no `.resx` designer files) to keep the project structure lightweight.
 
 ## Safety Boundaries

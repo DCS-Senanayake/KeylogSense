@@ -99,6 +99,8 @@ After launch:
   - Open Logs
   - Exit
 
+Configuration is automatically loaded from and saved to a local `config.json` file created in the application's run directory when modified via the dashboard.
+
 ## 5. Run The Safe Simulator
 
 Open a second PowerShell window in the repository root.

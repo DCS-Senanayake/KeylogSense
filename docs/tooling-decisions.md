@@ -145,3 +145,13 @@ Decision:
 Implication:
 - the project should report measured results conservatively and avoid blanket
   effectiveness claims
+
+## Decision 11. JSON Configuration Persistence
+
+Decision:
+- threshold and allowlist configurations are persisted locally in `config.json`
+- the application gracefully falls back to hardcoded engineering defaults if the file is absent or malformed
+
+Rationale:
+- allows tuning and allowlisting to survive application restarts without modifying code
+- keeps configuration portable and readable

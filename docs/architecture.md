@@ -29,12 +29,13 @@ Key classes:
 - `DashboardForm.cs`
 - `MonitoringCoordinator.cs`
 - `FeatureAggregator.cs`
+- `Configuration/ConfigManager.cs`
 
 Responsibilities:
-- bootstraps configuration and logging
+- bootstraps configuration and logging (reads from `config.json` via `ConfigManager`)
 - manually composes the runtime services
 - starts and stops monitoring from the tray menu
-- provides a Dashboard window for real-time telemetry observation
+- provides a Dashboard window for real-time telemetry observation and configuration management
 - shows balloon notifications for suspicious detections
 
 ### 2.2 Telemetry Collectors

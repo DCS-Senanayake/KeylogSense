@@ -79,8 +79,14 @@ The system must provide:
 - Open Logs
 - Exit
 
+The Dashboard must provide:
+- live monitoring grid with recent alerts
+- previous detection logs viewer (CSV)
+- allowlist management with persistent updates
+- configuration management with persistent thresholds
+
 Implementation status:
-- implemented (including a WinForms dashboard for real-time observation)
+- implemented (including a WinForms dashboard with tabs for observation, log viewing, allowlisting, and configuration)
 
 ### FR-7. Alerts
 

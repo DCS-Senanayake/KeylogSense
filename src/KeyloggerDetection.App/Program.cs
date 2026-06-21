@@ -22,7 +22,7 @@ internal static class Program
         ApplicationConfiguration.Initialize();
 
         // 1. Configuration
-        var config = new DetectionConfig();
+        var config = ConfigManager.Load();
         var baseDir = AppContext.BaseDirectory;
         var logDir = Path.Combine(baseDir, config.LogDirectory);
 
